@@ -7,12 +7,18 @@
   <property name="src.classes.dir"    value="${build.dir}/classes"/>
   <property name="test.classes.dir"   value="${build.dir}/test"/>
   <property name="javadoc.dir"        value="${basedir}/doc"/>
+  <property name="dist.dir"           value="${basedir}/dist"/>
+  <property name="dist.dir"           value="${basedir}/dist"/>
+  <property name="dist.doc.dir"       value="${dist.dir}/doc"/>
+  <property name="dist.src.dir"       value="${dist.dir}/src"/>
+  <property name="dist.src.zip"       value="${dist.dir}/src.zip"/>
 
   <property name="snax.version"       value="0.6" />
   <property name="snax.jar"           
             value="${build.dir}/snax-${snax.version}.jar" />
+  <property name="dist.zip"           
+            value="${dist.dir}/snax-${snax.version}.zip" />
 
-  <!-- class path -->
   <path id="project.class.path">
       <pathelement location="${src.classes.dir}" />
    </path>
@@ -28,6 +34,7 @@
   <target name="clean">
       <delete failonerror="false" dir="${build.dir}"/>
       <delete failonerror="false" dir="${javadoc.dir}"/>
+      <delete failonerror="false" dir="${dist.dir}"/>
   </target>
 
   <target name="build.src">
@@ -105,13 +112,37 @@
   <target name="build" depends="build.jar,javadoc,build.test">
   </target>
 
-  <target name="test">
+  <target name="test" depends="build.test">
     <junit fork="no" printsummary="yes" haltonfailure="no">
       <classpath refid="test.class.path" />
 
       <test name="net.sundell.snax.SNAXTestSuite" />
 
     </junit>
+  </target>
+
+  <!-- Build zip archives for release. -->
+  <target name="dist" depends="build, test">
+      <delete failonerror="false" dir="${dist.dir}"/>
+      <mkdir dir="${dist.dir}" />
+      <copy file="COPYING" todir="${dist.dir}" />
+      <copy file="${snax.jar}" todir="${dist.dir}" />
+      <!-- Include javadoc -->
+      <mkdir dir="${dist.doc.dir}" />
+      <copy todir="${dist.doc.dir}">
+          <fileset dir="${javadoc.dir}" />
+      </copy>
+      <!-- Include a compressed copy of the source -->
+      <mkdir dir="${dist.src.dir}" />
+      <copy todir="${dist.src.dir}">
+          <fileset dir="${src.dir}" />
+      </copy>
+      <zip destfile="${dist.src.zip}" basedir="${dist.dir}" 
+          includes="src/**/*" />
+      <delete failonerror="true" dir="${dist.src.dir}"/>
+
+      <!-- Build the final archive -->
+      <zip destfile="${dist.zip}" basedir="${dist.dir}" />
   </target>
 
 </project>
