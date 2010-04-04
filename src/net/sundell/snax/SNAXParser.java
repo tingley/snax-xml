@@ -10,16 +10,9 @@ import javax.xml.stream.events.*;
 
 /**
  * SNAX parser that operates on top of a STaX XMLEventReader.
+ * 
+ * @param <T> Data object type that will be passed to parse calls
  */
-
-// TODO: 
-// - merge elements() into another form of element()
-// - child() and descendent() 
-// - note: the best practice for having embedded handlers that build 
-//   additional stuff is to have them be parameterized on an interface, 
-//   rather than a concrete class.  otherwise, you can't reuse the handler.
-// - TODO: I need to formally parameterize a bunch of things to ensure type safety
-// - TODO: What about handlers with only side effects?  What are they parameterized with?
 public class SNAXParser<T> {
 
     private static Logger logger = Logger.getLogger(SNAXParser.class.getName());
@@ -51,13 +44,17 @@ public class SNAXParser<T> {
     }
     
     /**
-     * Set the NodeModel used by this parser.
+     * Set the NodeModel used by this parser.  This method may not be called 
+     * once parsing has been started with a call to <code>startParsing()</code> or 
+     * <code>parse()</code>.
+     * 
      * @param model the model to use
+     * @throws IllegalStateException if this method is called while parsing is underway
      */
     public void setModel(NodeModel<T> model) {
+        checkState(xmlReader == null, "Model was changed while parsing is underway");
         this.model = model;
     }
-
     
     private XMLEventReader xmlReader;
     private T data;
@@ -66,6 +63,7 @@ public class SNAXParser<T> {
     private Location currentLocation;
     private StartElement currentElement;
     private boolean done;
+    private boolean isIncremental = false;
 
     /**
      * Begin incremental parsing of a data stream, represented by a Reader.  This will initialize
@@ -79,15 +77,31 @@ public class SNAXParser<T> {
     public void startParsing(Reader reader, T data) throws XMLStreamException {
         checkState(model != null, "No model was set");
         init(reader, data);
+        isIncremental = true;
     }
     
+    /**
+     * Check to see if more XML remains to be processed.  This method may only be
+     * called following a call to <code>startParsing()</code>.
+     * @return true if more XML remains to be processed
+     */
     public boolean hasMoreEvents() {
         checkState(xmlReader != null, "startParsing() was never called");
+        checkState(isIncremental, "startParsing() was never called");
         return xmlReader.hasNext(); 
     }
     
+    /**
+     * Consumes the next XML event.  This method may only be
+     * called following a call to <code>startParsing()</code>.
+     * @return the XMLEvent that was processed
+     * @throws XMLStreamException if there is an error with the underlying XML
+     * @throws SNAXUserException if there is an error in an attached <code>ElementHandler</code>   
+     * @throws NoSuchElementException if no XML remains to be processed
+     */
     public XMLEvent processEvent() throws XMLStreamException, SNAXUserException {
         checkState(xmlReader != null, "startParsing() was never called");
+        checkState(isIncremental, "startParsing() was never called");
         return processEvent(xmlReader.nextEvent());
     }
     
@@ -99,10 +113,11 @@ public class SNAXParser<T> {
      *  
      * @param reader XML content to process
      * @param data optional, user-defined object to be passed as an argument to ElementHandlers
-     * @throws XMLStreamException if an XML error occurs
-     * @throws SNAXUserException if an ElementHandler throws an exception
+     * @throws XMLStreamException if there is an error with the underlying XML
+     * @throws SNAXUserException if there is an error in an attached <code>ElementHandler</code>   
      */
     public void parse(Reader reader, T data) throws XMLStreamException, SNAXUserException {
+        // TODO: this needs to catch concurrent parse attempts
         init(reader, data);
         for (XMLEvent event = xmlReader.nextEvent(); xmlReader.hasNext(); event = xmlReader.nextEvent()) {
             processEvent(event);

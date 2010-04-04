@@ -42,6 +42,10 @@ public class AttributeMatcher implements ElementConstraint {
         return new AttributeMatchesConstraint(attributeName, pattern, false);
     }
 
+    public ElementConstraint filter(AttributeFilter filter) {
+        return new AttributeFilterConstraint(attributeName, filter);
+    }
+    
     @Override
     public boolean matches(StartElement element) {
         return (element.getAttributeByName(attributeName) != null);

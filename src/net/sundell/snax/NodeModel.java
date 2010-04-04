@@ -8,6 +8,15 @@ import javax.xml.stream.events.EntityDeclaration;
 import javax.xml.stream.events.EntityReference;
 import javax.xml.stream.events.NotationDeclaration;
 
+/**
+ * A data structure that defines parse behavior for an XML document.  <code>NodeModel</code>
+ * encapsulates a basic state machine that is described using a <code>NodeModelBuilder</code>.
+ * Once the <code>NodeModel</code> has been built, it can not be modified. 
+ * 
+ * @param <T> Data object type that will be passed to parse calls
+ * @see NodeModelBuilder
+ * @see SNAXParser
+ */
 public class NodeModel<T> {
 
     private List<DeclarationHandler<T>> dtdHandlers = new ArrayList<DeclarationHandler<T>>();

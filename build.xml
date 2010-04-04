@@ -93,7 +93,7 @@
       <javadoc access="public" 
           author="false" 
           destdir="${javadoc.dir}" 
-          doctitle="SNAX ${snax.version}" 
+          windowtitle="SNAX ${snax.version}" 
           nodeprecated="false" 
           nodeprecatedlist="false" 
           noindex="false" 
@@ -106,6 +106,7 @@
           use="true" 
           version="true">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
+            <doctitle><![CDATA[<h1>SNAX ${snax.version}</h1>]]></doctitle>
       </javadoc>
   </target>
 

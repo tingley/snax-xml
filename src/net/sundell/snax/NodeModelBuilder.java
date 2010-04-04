@@ -13,11 +13,9 @@ import javax.xml.namespace.QName;
  * usable for parsing.  This is done by creating chains of <code>ElementSelector</code> instances,
  * to which <code>ElementHandlers</code> are attached.  A simple use of <code>NodeModelBuilder</code>
  * could look like this: 
- * <pre>
- * NodeModel<MyData> model = new NodeModelBuilder<MyData>() {{
+ * <pre>  NodeModel&lt;MyData&gt; model = new NodeModelBuilder&lt;MyData&gt;() {{
  *    descendant(with("id")).attach(new IdHandler());
- * }}.build()
- * </pre>
+ *  }}.build()</pre>
  *
  * This selects all elements in the document with the <code>id</code> attribute and
  * send events about those elements to an instance of an <code>ElementHandler</code>
@@ -120,15 +118,11 @@ public class NodeModelBuilder<T> {
     /**
      * Used to match an attribute when adding a constraint to an <code>ElementSelector</code>.
      * The returned <code>AttributeMatcher</code> instance can be used to specify the constraint, as in
-     * <p>
-     *   &nbsp;&nbsp;<code>child(with(attrName).equalTo("attrValue"))</code>
-     * <p>
+     * <pre>  child(with(attrName).equalTo("attrValue"))</pre>
      * which will match any child node with the specified attribute that has a value of "attrValue".
      * <p>    
      * It may also be used as a constraint on its own, as in
-     * <p>
-     *     &nbsp;&nbsp;<code>child(with(attrName))</code>
-     * <p>
+     * <pre>  child(with(attrName))</pre>
      * which will match any child node with the specified attribute.
      * 
      * @param attributeName QName of the desired attribute
