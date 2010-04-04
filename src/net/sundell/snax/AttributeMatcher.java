@@ -1,8 +1,16 @@
 package net.sundell.snax;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.events.StartElement;
 
-public class AttributeMatcher {
+/**
+ * An {@link ElementConstraint} that specifies that an element has a particular
+ * attribute and allows for various filters to be applied to that attribute's
+ * value.
+ * 
+ * 
+ */
+public class AttributeMatcher implements ElementConstraint {
 
     private QName attributeName;
 
@@ -32,6 +40,11 @@ public class AttributeMatcher {
     
     public ElementConstraint doesNotMatch(String pattern) {
         return new AttributeMatchesConstraint(attributeName, pattern, false);
+    }
+
+    @Override
+    public boolean matches(StartElement element) {
+        return (element.getAttributeByName(attributeName) != null);
     }
 
 }

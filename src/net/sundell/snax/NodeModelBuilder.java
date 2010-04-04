@@ -8,6 +8,25 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+/**
+ * A <code>NodeModelBuilder</code> is used to construct a <code>NodeModel</code> which is then
+ * usable for parsing.  This is done by creating chains of <code>ElementSelector</code> instances,
+ * to which <code>ElementHandlers</code> are attached.  A simple use of <code>NodeModelBuilder</code>
+ * could look like this: 
+ * <pre>
+ * NodeModel<MyData> model = new NodeModelBuilder<MyData>() {{
+ *    descendant(with("id")).attach(new IdHandler());
+ * }}.build()
+ * </pre>
+ *
+ * This selects all elements in the document with the <code>id</code> attribute and
+ * send events about those elements to an instance of an <code>ElementHandler</code>
+ * called <code>IdHandler</code>. 
+ *
+ * @param <T> Data object type that will be passed to parse calls
+ * @see NodeModel
+ * @see SNAXParser
+ */
 public class NodeModelBuilder<T> {
 
     private NodeModel<T> model;
@@ -21,7 +40,7 @@ public class NodeModelBuilder<T> {
     }
     
     /**
-     * Select an element with a specified QName. 
+     * Select an element with a specified <code>QName</code>. 
      * @param name element qname to match
      * @param constraints additional constraints, if any
      * @return element selector
@@ -31,7 +50,7 @@ public class NodeModelBuilder<T> {
     }
 
     /**
-     * Equivalent to element(new QName("name")). 
+     * Equivalent to <code>element(new QName("name"))</code>. 
      * @param localName element local name to match
      * @param constraints additional constraints, if any
      * @return
@@ -42,7 +61,8 @@ public class NodeModelBuilder<T> {
 
     /**
      * Syntactic sugar to allow quick construction of a chain of simple element selectors.
-     * elements(name1, name2, name3) is equivalent to element(name1).element(name2).element(name3).
+     * <code>elements(name1, name2, name3)</code> is equivalent to 
+     * <code>element(name1).element(name2).element(name3)</code>.
      * @param names element names 
      * @return last element selector in the chain
      */
@@ -55,7 +75,7 @@ public class NodeModelBuilder<T> {
     }
 
     /**
-     * Equivalent to elements(new QName("name1"), new QName("name2"), ...).
+     * Equivalent to <code>elements(new QName("name1"), new QName("name2"), ...)</code>.
      * @param localNames element local names 
      * @return last element selector in the chain
      */
@@ -70,7 +90,7 @@ public class NodeModelBuilder<T> {
     /**
      * Create a selector that invokes an arbitrary filter to determine whether to
      * accept elements.
-     * @param filter ElementFilter to test elements
+     * @param filter <code>ElementFilter</code> to test elements
      * @return element selector
      */
     public final ElementSelector<T> element(ElementFilter filter) {
@@ -98,9 +118,19 @@ public class NodeModelBuilder<T> {
     }
     
     /**
-     * Used to match an attribute as part when adding a constraint to an ElementSelector.
-     * The returned AttributeMatcher instance should be used to specify the constraint, as in
-     *     child(with(attrName).equalTo("attrValue"))
+     * Used to match an attribute when adding a constraint to an <code>ElementSelector</code>.
+     * The returned <code>AttributeMatcher</code> instance can be used to specify the constraint, as in
+     * <p>
+     *   &nbsp;&nbsp;<code>child(with(attrName).equalTo("attrValue"))</code>
+     * <p>
+     * which will match any child node with the specified attribute that has a value of "attrValue".
+     * <p>    
+     * It may also be used as a constraint on its own, as in
+     * <p>
+     *     &nbsp;&nbsp;<code>child(with(attrName))</code>
+     * <p>
+     * which will match any child node with the specified attribute.
+     * 
      * @param attributeName QName of the desired attribute
      * @return AttributeMatcher for use in constraint construction
      */
@@ -109,7 +139,7 @@ public class NodeModelBuilder<T> {
     }
 
     /**
-     * Equivalent to with(new QName(attributeLocalName)).
+     * Equivalent to <code>with(new QName(attributeLocalName))</code>.
      * @param attributeLocalName attribute local name
      * @return AttributeMatcher for use in constraint construction
      */
@@ -117,10 +147,23 @@ public class NodeModelBuilder<T> {
         return new AttributeMatcher(new QName(attributeLocalName));
     }
 
-    public final void attachDTDHandler(DeclarationHandler<T> handler) {
-        model.addDTDHandler(handler);
+    /**
+     * Attach a {@link DeclarationHandler}.
+     * @param handler <code>DeclarationHandler</code>
+     */
+    public final void attachDeclarationHandler(DeclarationHandler<T> handler) {
+        model.addDeclarationHandler(handler);
     }
     
+    /**
+     * Generate a {@link NodeModel} for use in parsing, based on the selectors
+     * and handlers attached to this builder.
+     * <p>
+     * This will also trigger a cascade <code>build()</code> calls on any attached 
+     * <code>ElementHandler</code> instances.
+     * 
+     * @return <code>NodeModel</code> for parsing
+     */
     public final NodeModel<T> build() {
      	for (Map.Entry<NodeState<T>, List<ElementHandler<T>>> e : statesWithHandlers.entrySet()) {
     	    NodeState<T> state = e.getKey();

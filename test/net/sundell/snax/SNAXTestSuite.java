@@ -8,7 +8,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    TestParser.class
+    TestParser.class,
+    TestSelectors.class,
+    TestConstraints.class
 })
 public class SNAXTestSuite {
     public static void main(String[] args) {

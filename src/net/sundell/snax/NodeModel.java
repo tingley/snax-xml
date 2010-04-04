@@ -25,7 +25,7 @@ public class NodeModel<T> {
         return root;
     }
     
-    void addDTDHandler(DeclarationHandler<T> handler) {
+    void addDeclarationHandler(DeclarationHandler<T> handler) {
         dtdHandlers.add(handler);
     }
     
