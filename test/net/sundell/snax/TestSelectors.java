@@ -217,8 +217,8 @@ public class TestSelectors {
         final TestCHandler bar = new TestCHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             // More specific d-rules should mask less specific ones
-            descendant("bar").attach(foo);
             element("xml").descendant("bar").attach(bar);
+            descendant("bar").attach(foo);
         }}.build());
         parser.parse(new StringReader("<xml><bar>YES2</bar></xml>"), null);
         assertEquals("", foo.contents);
@@ -253,6 +253,20 @@ public class TestSelectors {
         for (String s : handler.elementNames) {
             assertEquals("x", s);
         }
-
     }
+    
+    @Test
+    public void testExplicitSelectorPriority() throws Exception {
+        final TestHandler foo = new TestHandler();
+        final TestHandler bar = new TestHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            // More specific d-rules should mask less specific ones
+            elements("foo", "bar").attach(foo);
+            descendant("bar").attach(bar);
+        }}.build());
+        parser.parse(new StringReader("<foo><bar/></foo>"), null);
+        assertEquals("bar", foo.elementName);
+        assertEquals("", bar.elementName);
+    }
+   
 }
