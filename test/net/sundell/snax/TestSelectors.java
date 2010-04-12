@@ -198,6 +198,20 @@ public class TestSelectors {
     }
 
     @Test
+    public void testNamedDescendantAndChild2() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        final TestCHandler bar = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new 
+                NodeModelBuilder<Object>() {{
+                            child().element("foo").attach(foo);
+                            descendant().element("bar").attach(bar);
+        }}.build());
+        parser.parse(new StringReader("<xml><foo>YES</foo><x><bar>YES2</bar></x></xml>"), null);
+        assertEquals("YES", foo.contents);
+        assertEquals("YES2", bar.contents);
+    }
+    
+    @Test
     public void testDescendantMasking() throws Exception {
         final TestCHandler foo = new TestCHandler();
         final TestCHandler bar = new TestCHandler();
