@@ -28,29 +28,6 @@ public class DescendantSelector<T> extends ElementSelector<T> {
         return baseState.addDescendantRule(this);
     }
 
-    static class DescendantSelectorTest<T> extends ElementSelector.ElementSelectorTest<T> {
-        public DescendantSelectorTest(DescendantSelector<T> selector) {
-            super(selector);
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean equals(Object o) {
-            if (o == this) {
-                return true;
-            }
-            if (o == null || !(o instanceof DescendantSelectorTest)) {
-                return false;
-            }
-            return super.equals(o);
-        }
-        
-        @Override
-        public String toString() {
-            return "DescendantSelectorTest(" + getSelector() + ")";
-        }
-    }
-    
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object o) {

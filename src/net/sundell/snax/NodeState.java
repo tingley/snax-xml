@@ -83,9 +83,9 @@ class NodeState <T>{
         return descendantRules;
     }
     
-    NodeState<T> addDescendantRule(DescendantSelector<T> selector) {
+    NodeState<T> addDescendantRule(ElementSelector<T> selector) {
         // TODO: refactor this use of new
-        NodeTest<T> test = new DescendantSelector.DescendantSelectorTest<T>(selector);
+        NodeTest<T> test = new ElementSelector.ElementSelectorTest<T>(selector);
         for (NodeTransition<T> rule : descendantRules) {
             if (test.equals(rule.getTest())) {
                 return rule.getTarget();

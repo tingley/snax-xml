@@ -31,6 +31,10 @@ class ElementEqualsSelector<T> extends ElementSelector<T> {
         this.qname = qname;
     }
 
+    protected QName getQName() {
+        return qname;
+    }
+    
     @Override
     protected boolean matches(StartElement element) {
         return qname.equals(element.getName());
