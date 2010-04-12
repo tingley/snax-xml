@@ -143,7 +143,7 @@ public class TestSelectors {
     public void testDescendantWithMultiplePaths() throws Exception {
         final TestCHandler foo = new TestCHandler();
         final TestCHandler bar = new TestCHandler();
-        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             descendant().element("foo").attach(foo);
             descendant().element("bar").attach(bar);
         }}.build());
@@ -169,5 +169,76 @@ public class TestSelectors {
         assertEquals("e1", foo.elementNames.get(0));
         assertEquals("e2", foo.elementNames.get(1));
     }
+
+    @Test
+    public void testMultipleChildRules() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        final TestCHandler bar = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            child().element("foo").attach(foo);
+            child().element("bar").attach(bar);
+        }}.build());
+        parser.parse(new StringReader("<xml><foo>YES</foo><bar>YES2</bar></xml>"), null);
+        assertEquals("YES", foo.contents);
+        assertEquals("YES2", bar.contents);
+        
+    }
     
+    @Test
+    public void testNamedDescendantAndChild() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        final TestCHandler bar = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            descendant("bar").attach(bar);
+            child().element("foo").attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<xml><foo>YES</foo><bar>YES2</bar></xml>"), null);
+        assertEquals("YES", foo.contents);
+        assertEquals("YES2", bar.contents);
+    }
+
+    @Test
+    public void testDescendantMasking() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        final TestCHandler bar = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            // More specific d-rules should mask less specific ones
+            descendant("bar").attach(foo);
+            element("xml").descendant("bar").attach(bar);
+        }}.build());
+        parser.parse(new StringReader("<xml><bar>YES2</bar></xml>"), null);
+        assertEquals("", foo.contents);
+        assertEquals("YES2", bar.contents);
+    }
+    
+    @Test
+    public void testDescendantNodeOrdering() throws Exception {
+        final TestMultiHandler handler = new TestMultiHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            descendant().attach(handler);
+        }}.build());
+        parser.parse(new StringReader("<a><b><c/></b><d><e><f/></e><g/></d></a>"), null);
+        assertEquals(7, handler.elementNames.size());
+        assertEquals("a", handler.elementNames.get(0));
+        assertEquals("b", handler.elementNames.get(1));
+        assertEquals("c", handler.elementNames.get(2));
+        assertEquals("d", handler.elementNames.get(3));
+        assertEquals("e", handler.elementNames.get(4));
+        assertEquals("f", handler.elementNames.get(5));
+        assertEquals("g", handler.elementNames.get(6));
+    }
+    
+    @Test
+    public void testNamedDescendant() throws Exception {
+        final TestMultiHandler handler = new TestMultiHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            descendant("x").attach(handler);
+        }}.build());
+        parser.parse(new StringReader("<foo><x>1</x><y><x/><z/></y><x><x/></x></foo>"), null);
+        assertEquals(4, handler.elementNames.size());
+        for (String s : handler.elementNames) {
+            assertEquals("x", s);
+        }
+
+    }
 }

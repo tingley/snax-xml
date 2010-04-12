@@ -58,12 +58,11 @@ public class SNAXParser<T> {
     
     private XMLEventReader xmlReader;
     private T data;
-    private Stack<NodeState<T>> stack;
-    private NodeState<T> currentState;
-    private Location currentLocation;
-    private StartElement currentElement;
     private boolean done;
     private boolean isIncremental = false;
+    private Stack<ParseState> stack;
+    private ParseState currentState;
+    private Location currentLocation;
 
     /**
      * Begin incremental parsing of a data stream, represented by a Reader.  This will initialize
@@ -127,13 +126,12 @@ public class SNAXParser<T> {
     private void init(Reader reader, T data) throws XMLStreamException {
         this.xmlReader = factory.createXMLEventReader(reader);
         this.data = data;
-        stack = new Stack<NodeState<T>>();
-        currentState = model.getRoot();
+        stack = new Stack<ParseState>();
+        currentState = new ParseState(model.getRoot(), model.getRoot().getDescendantRules(), null);
         currentLocation = null;
-        currentElement = null;
         done = false;
     }
-    
+
     private XMLEvent processEvent(XMLEvent event) throws XMLStreamException, SNAXUserException {       
         try {
             int type = event.getEventType();
@@ -145,19 +143,32 @@ public class SNAXParser<T> {
                     logger.fine("START: " + startEl.getName().getLocalPart());
                 }
                 checkState(!done, "Element started after end of document");
-                NodeState<T> newState = currentState.follow(startEl);
+                
+                NodeState<T> nextState = currentState.nodeState.follow(startEl);
+                if (nextState.equals(NodeState.EMPTY_STATE)) {
+                    // Look for a match among the inherited descendant rules
+                    for (NodeTransition<T> rule : currentState.deferredRules) {
+                        if (rule.getTest().matches(startEl)) {
+                            nextState = rule.getTarget();
+                            break;
+                        }
+                    }
+                }
+                ParseState newState = new ParseState(nextState, 
+                        CompoundIterable.prepend(nextState.getDescendantRules(), 
+                                                 currentState.deferredRules), 
+                        startEl);
                 stack.push(newState);
-                newState.handleElementStart(startEl, data);
+                newState.nodeState.handleElementStart(startEl, data);
                 currentState = newState;
-                currentElement = startEl;
                 break;
             case XMLEvent.END_ELEMENT:
-                NodeState<T> ended = stack.pop();
+                ParseState ended = stack.pop();
                 EndElement endEl = event.asEndElement();
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("END: " + endEl.getName().getLocalPart());
                 }
-                ended.handleElementEnd(endEl, data);
+                ended.nodeState.handleElementEnd(endEl, data);
                 if (stack.empty()) {
                     // End of document!
                     this.done = true;
@@ -167,7 +178,7 @@ public class SNAXParser<T> {
                 }
                 break;
             case XMLEvent.CHARACTERS:
-                currentState.handleContents(currentElement, 
+                currentState.nodeState.handleContents(currentState.element, 
                                             event.asCharacters(), data);
                 break;
             case XMLEvent.DTD:
@@ -197,4 +208,19 @@ public class SNAXParser<T> {
         }
     }
 
+    /**
+     * Holder for runtime state.
+     */
+    class ParseState {
+        NodeState<T> nodeState;
+        Iterable<NodeTransition<T>> deferredRules;
+        StartElement element;
+
+        ParseState(NodeState<T> nodeState, Iterable<NodeTransition<T>> deferredRules,
+                   StartElement element) { 
+            this.nodeState = nodeState;
+            this.deferredRules = deferredRules;
+            this.element = element;
+        }
+    }
 }

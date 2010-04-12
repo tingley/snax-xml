@@ -119,6 +119,28 @@ public abstract class ElementSelector<T> {
     }
     
     /**
+     * Selector that matches any descendant element with a given name that satisfies the 
+     * specified constraints.  If no constraints are provided, accepts all descendant elements
+     * with the given name.
+     * @param qname element QName
+     * @param constraints element constraints
+     * @return child element selector
+     */
+    public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
+        return new DescendantEqualsSelector<T>(context, this, qname, Arrays.asList(constraints));
+    }
+
+    /**
+     * Equivalent to <code>descendant(new QName("name1"), ...)</code>.
+     * @param localName element name (not namespace-qualified)
+     * @param constraints element constraints
+     * @return child element selector
+     */
+    public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
+        return new DescendantEqualsSelector<T>(context, this, new QName(localName), Arrays.asList(constraints));
+    }
+
+    /**
      * Attach an ElementHandler to this selector or chain of selectors.  The attached
      * handler will receive notifications for every selected element.
      * @param handler element handler
@@ -134,6 +156,12 @@ public abstract class ElementSelector<T> {
     	return addState(parentState);
     }
     
+    /**
+     * Add a transition, with a test corresponding to this selector,
+     * to specified state.
+     * @param baseState state to which the transition should be added
+     * @return target state for the transition
+     */
     protected NodeState<T> addState(NodeState<T> baseState) {
     	NodeTest<T> test = new ElementSelectorTest<T>(this);
     	return baseState.addTransition(test, new NodeState<T>());

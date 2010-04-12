@@ -16,14 +16,15 @@ class NodeState <T>{
     private List<NodeTransition<T>> transitions = new ArrayList<NodeTransition<T>>();
     private List<ElementHandler<T>> elementHandlers = 
                             new ArrayList<ElementHandler<T>>();
-    
-    private NodeState<T> defaultState;
+    private List<NodeTransition<T>> descendantRules = new ArrayList<NodeTransition<T>>();
     
     public NodeState() { }
 
-    protected NodeState(List<NodeTransition<T>> transitions, List<ElementHandler<T>> elementHandlers) {
+    protected NodeState(List<NodeTransition<T>> transitions, List<ElementHandler<T>> elementHandlers,
+                        List<NodeTransition<T>> descendantRules) {
         this.transitions = transitions;
         this.elementHandlers = elementHandlers;
+        this.descendantRules = descendantRules;
     }
     
     protected List<ElementHandler<T>> getHandlers() {
@@ -44,10 +45,10 @@ class NodeState <T>{
     private static NodeState createEmptyState() {
         List<NodeTransition> transitions = Collections.emptyList();
         List<ElementHandler> elementHandlers = Collections.emptyList();
-        return new NodeState(transitions, elementHandlers);
+        List<ElementHandler> descendantRules = Collections.emptyList();
+        return new NodeState(transitions, elementHandlers, descendantRules);
     }
     
-
     @SuppressWarnings("unchecked")
     private NodeState<T> emptyState() {
         return EMPTY_STATE;
@@ -78,19 +79,21 @@ class NodeState <T>{
         this.elementHandlers.add(handler);
     }
 
-    /**
-     * Returns the state that is the target of this state's default transition,
-     * creating a new one if there is none.  Note that even though the 
-     * EMPTY_STATE is treated as the "default default", it is never returned
-     * by this method.
-     * 
-     * @return default state
-     */
-    NodeState<T> getDefaultState() {
-        if (defaultState == null) {
-            defaultState = new CircularState<T>();
+    List<NodeTransition<T>> getDescendantRules() {
+        return descendantRules;
+    }
+    
+    NodeState<T> addDescendantRule(DescendantSelector<T> selector) {
+        // TODO: refactor this use of new
+        NodeTest<T> test = new DescendantSelector.DescendantSelectorTest<T>(selector);
+        for (NodeTransition<T> rule : descendantRules) {
+            if (test.equals(rule.getTest())) {
+                return rule.getTarget();
+            }
         }
-        return defaultState;
+        NodeState<T> target = new NodeState<T>();
+        descendantRules.add(new NodeTransition<T>(test, target));
+        return target;
     }
     
     /**
@@ -105,9 +108,6 @@ class NodeState <T>{
             if (transition.getTest().matches(element)) {
                 return transition.getTarget();
             }
-        }
-        if (defaultState != null) {
-            return defaultState;
         }
         return emptyState();
     }
