@@ -13,7 +13,7 @@
   <property name="dist.src.dir"       value="${dist.dir}/src"/>
   <property name="dist.src.zip"       value="${dist.dir}/src.zip"/>
 
-  <property name="snax.version"       value="0.6" />
+  <property name="snax.version"       value="0.7" />
   <property name="snax.jar"           
             value="${build.dir}/snax-${snax.version}.jar" />
   <property name="dist.zip"           
