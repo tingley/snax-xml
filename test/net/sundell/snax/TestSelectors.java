@@ -3,6 +3,7 @@ package net.sundell.snax;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
@@ -269,4 +270,23 @@ public class TestSelectors {
         assertEquals("", bar.elementName);
     }
    
+    @Test
+    public void testDescendantFilter() throws Exception {
+        final TestMultiHandler handler = new TestMultiHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            // Find all children whose element names have digits in them
+            descendant(new ElementFilter() {
+                Pattern p = Pattern.compile("\\d");
+                @Override
+                public boolean test(StartElement element) {
+                    return p.matcher(element.getName().getLocalPart()).find();
+                }
+            }).attach(handler);
+        }}.build());
+        parser.parse(new StringReader("<foo1><bar/><b2ar/><ba3r/><bar/></foo1>"), null);
+        assertEquals(3, handler.elementNames.size());
+        assertEquals("foo1", handler.elementNames.get(0));
+        assertEquals("b2ar", handler.elementNames.get(1));
+        assertEquals("ba3r", handler.elementNames.get(2));
+    }
 }

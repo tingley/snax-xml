@@ -16,6 +16,10 @@ class ElementFilterSelector<T> extends ElementSelector<T> {
         this.filter = filter;
     }
 
+    protected ElementFilter getFilter() {
+        return filter;
+    }
+    
     @Override
     protected boolean matches(StartElement element) {
         return filter.test(element);

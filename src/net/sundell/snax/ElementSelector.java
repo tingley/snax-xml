@@ -102,7 +102,7 @@ public abstract class ElementSelector<T> {
      * Selector that matches any child element that satisfies the specified constraints.  If no
      * constraints are provided, accepts all child elements.
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public ElementSelector<T> child(ElementConstraint...constraints) {
         return new ChildSelector<T>(context, this, Arrays.asList(constraints));
@@ -112,7 +112,7 @@ public abstract class ElementSelector<T> {
      * Selector that matches any descendant element that satisfies the specified constraints.  If no
      * constraints are provided, accepts all descendant elements.
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public ElementSelector<T> descendant(ElementConstraint...constraints) {
         return new DescendantSelector<T>(context, this, Arrays.asList(constraints));
@@ -124,7 +124,7 @@ public abstract class ElementSelector<T> {
      * with the given name.
      * @param qname element QName
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
         return new DescendantEqualsSelector<T>(context, this, qname, Arrays.asList(constraints));
@@ -134,12 +134,21 @@ public abstract class ElementSelector<T> {
      * Equivalent to <code>descendant(new QName("name1"), ...)</code>.
      * @param localName element name (not namespace-qualified)
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
         return new DescendantEqualsSelector<T>(context, this, new QName(localName), Arrays.asList(constraints));
     }
 
+    /**
+     * Selector that matches any descendant element that is accepted by the specified filter. 
+     * @param filter element filter
+     * @return element selector
+     */
+    public final ElementSelector<T> descendant(ElementFilter filter) {
+        return new DescendantFilterSelector<T>(context, this, filter);
+    }
+    
     /**
      * Attach an ElementHandler to this selector or chain of selectors.  The attached
      * handler will receive notifications for every selected element.

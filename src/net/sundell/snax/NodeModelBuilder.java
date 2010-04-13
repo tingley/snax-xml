@@ -99,7 +99,7 @@ public class NodeModelBuilder<T> {
      * Selector that matches any child element that satisfies the specified constraints.  If no
      * constraints are provided, accepts all child elements.
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public final ElementSelector<T> child(ElementConstraint...constraints) {
         return new ChildSelector<T>(this, Arrays.asList(constraints));
@@ -109,7 +109,7 @@ public class NodeModelBuilder<T> {
      * Selector that matches any descendant element that satisfies the specified constraints.  If no
      * constraints are provided, accepts all descendant elements.
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public final ElementSelector<T> descendant(ElementConstraint...constraints) {
         return new DescendantSelector<T>(this, Arrays.asList(constraints));
@@ -121,7 +121,7 @@ public class NodeModelBuilder<T> {
      * with the given name.
      * @param qname element QName
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
         return new DescendantEqualsSelector<T>(this, qname, Arrays.asList(constraints));
@@ -131,12 +131,21 @@ public class NodeModelBuilder<T> {
      * Equivalent to <code>descendant(new QName("name1"), ...)</code>.
      * @param localName element name (not namespace-qualified)
      * @param constraints element constraints
-     * @return child element selector
+     * @return element selector
      */
     public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
         return new DescendantEqualsSelector<T>(this, new QName(localName), Arrays.asList(constraints));
     }
 
+    /**
+     * Selector that matches any descendant element that is accepted by the specified filter. 
+     * @param filter element filter
+     * @return element selector
+     */
+    public final ElementSelector<T> descendant(ElementFilter filter) {
+        return new DescendantFilterSelector<T>(this, filter);
+    }
+    
     /**
      * Used to match an attribute when adding a constraint to an <code>ElementSelector</code>.
      * The returned <code>AttributeMatcher</code> instance can be used to specify the constraint, as in
