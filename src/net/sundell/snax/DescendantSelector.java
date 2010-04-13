@@ -7,7 +7,7 @@ import javax.xml.stream.events.StartElement;
 /**
  * Matches any descendant node.
  */
-public class DescendantSelector<T> extends ElementSelector<T> {
+class DescendantSelector<T> extends ElementSelector<T> {
     
     DescendantSelector(NodeModelBuilder<T> context, List<ElementConstraint> constraints) {
         super(context, constraints);

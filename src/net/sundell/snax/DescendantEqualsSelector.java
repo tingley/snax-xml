@@ -7,7 +7,7 @@ import javax.xml.namespace.QName;
 /**
  * Matches any descendant node with a given name.
  */
-public class DescendantEqualsSelector<T> extends ElementEqualsSelector<T> {
+class DescendantEqualsSelector<T> extends ElementEqualsSelector<T> {
 
     DescendantEqualsSelector(NodeModelBuilder<T> context, QName qname, List<ElementConstraint> constraints) {
         super(context, qname, constraints);

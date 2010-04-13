@@ -3,7 +3,7 @@ package net.sundell.snax;
 /**
  * Matches any descendant node that satisfies a specified {@link ElementFilter}.
  */
-public class DescendantFilterSelector<T> extends ElementFilterSelector<T> {
+class DescendantFilterSelector<T> extends ElementFilterSelector<T> {
 
     DescendantFilterSelector(NodeModelBuilder<T> context, ElementFilter filter) {
         super(context, filter);
