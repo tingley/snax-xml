@@ -10,7 +10,7 @@ import javax.xml.stream.events.StartElement;
  * Test handlers, etc.
  */
 public class TestUtils {
-    static class TestHandler extends DefaultElementHandler<Object> {
+    public static class TestHandler extends DefaultElementHandler<Object> {
         public String elementName = "";
         @Override
         public void startElement(StartElement el, Object unused) {
@@ -18,7 +18,7 @@ public class TestUtils {
         }
     }
     
-    static class TestCHandler extends DefaultElementHandler<Object> {
+    public static class TestCHandler extends DefaultElementHandler<Object> {
         public String contents = "";
         @Override
         public void characters(StartElement parent, Characters data, Object unused) {
@@ -26,7 +26,7 @@ public class TestUtils {
         }
     }
   
-    static class TestMultiHandler extends DefaultElementHandler<Object> {
+    public static class TestMultiHandler extends DefaultElementHandler<Object> {
         public List<String> elementNames = new ArrayList<String>();
         @Override
         public void startElement(StartElement el, Object unused) {
@@ -34,7 +34,7 @@ public class TestUtils {
         }
     }
 
-    static class ErrorThrowingHandler extends DefaultElementHandler<Object> {
+    public static class ErrorThrowingHandler extends DefaultElementHandler<Object> {
         private String message;
         public ErrorThrowingHandler(String message) {
             this.message = message;
@@ -44,5 +44,5 @@ public class TestUtils {
             throw new SNAXUserException(message);
         }
     }
-   
+      
 }
