@@ -12,7 +12,7 @@ import javax.xml.stream.Location;
  * automatically by the framework based on the current stream location that invoked
  * the handler that threw this exception.
  */
-public class SNAXUserException extends Exception {
+public class SNAXUserException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     private Location location;
