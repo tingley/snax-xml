@@ -132,7 +132,7 @@ public class SNAXParser<T> {
         done = false;
     }
 
-    private XMLEvent processEvent(XMLEvent event) throws XMLStreamException, SNAXUserException {       
+    private XMLEvent processEvent(XMLEvent event) throws SNAXUserException {       
         try {
             int type = event.getEventType();
             currentLocation = event.getLocation();
@@ -199,6 +199,11 @@ public class SNAXParser<T> {
         catch (SNAXUserException e) {
             e.setLocation(currentLocation);
             throw e;
+        }
+        catch (Exception e) {
+            SNAXUserException se = new SNAXUserException(e);
+            se.setLocation(currentLocation);
+            throw se;
         }
     }
 
