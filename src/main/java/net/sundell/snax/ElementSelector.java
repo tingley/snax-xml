@@ -159,6 +159,16 @@ public abstract class ElementSelector<T> {
     	context.addElementHandler(state, handler);
     }
     
+    public AttachPoint<T> attachPoint() {
+        return new AttachPoint<T>(buildState());
+    }
+    
+    // TODO: support other signatures instead of just localName
+    public void addTransition(String localName, AttachPoint<T> target) {
+        buildState().addTransition(new ExplicitTransitionTest<T>(new QName(localName)), 
+                                   target.getNodeState());
+    }
+    
     protected NodeState<T> buildState() {
     	NodeState<T> parentState = (parent == null) ?
     			context.getModel().getRoot() : parent.buildState();
@@ -180,9 +190,20 @@ public abstract class ElementSelector<T> {
     	return constraints;
     }
     
+    static class ExplicitTransitionTest<T> implements NodeTest<T> {
+        private QName name;
+        ExplicitTransitionTest(QName name) {
+            this.name = name;
+        }
+        @Override
+        public boolean matches(StartElement element) {
+            return element.getName().equals(name);
+        }
+    }
+    
     static class ElementSelectorTest<T> implements NodeTest<T> {
         private ElementSelector<T> selector;
-        public ElementSelectorTest(ElementSelector<T> selector) {
+        ElementSelectorTest(ElementSelector<T> selector) {
             this.selector = selector;
         }
         

@@ -132,6 +132,22 @@ public class TestParser {
         assertEquals("YES", foo.contents);
     }
 
+    @Test
+    public void testExplicitTransition() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            AttachPoint<Object> aNode = element("a").attachPoint();
+            element("a").element("b").addTransition("a", aNode);
+            element("a").attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<a>Text</a>"), null);
+        assertEquals("Text", foo.contents);
+        parser.parse(new StringReader("<a><b><a>Text</a></b></a>"), null);
+        assertEquals("Text", foo.contents);
+        parser.parse(new StringReader("<a><b><a><b><a>Text</a></b></a></b></a>"), null);
+        assertEquals("Text", foo.contents);
+    }
+    
     public static void main(String[] args) {
         org.junit.runner.JUnitCore.main("net.sundell.snax.TestParser");
     }
