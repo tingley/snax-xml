@@ -163,10 +163,8 @@ public abstract class ElementSelector<T> {
         return new AttachPoint<T>(buildState());
     }
     
-    // TODO: support other signatures instead of just localName
     public void addTransition(String localName, AttachPoint<T> target) {
-        buildState().addTransition(new ExplicitTransitionTest<T>(new QName(localName)), 
-                                   target.getNodeState());
+        addTransition(new QName(localName), target);
     }
 
     public void addTransition(QName name, AttachPoint<T> target) {
