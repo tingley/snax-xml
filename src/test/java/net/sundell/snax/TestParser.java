@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
@@ -133,11 +134,51 @@ public class TestParser {
     }
 
     @Test
-    public void testExplicitTransition() throws Exception {
+    public void testAddExplicitTransition() throws Exception {
         final TestCHandler foo = new TestCHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             AttachPoint<Object> aNode = element("a").attachPoint();
             element("a").element("b").addTransition("a", aNode);
+            element("a").attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<a>Text</a>"), null);
+        assertEquals("Text", foo.contents);
+        parser.parse(new StringReader("<a><b><a>Text</a></b></a>"), null);
+        assertEquals("Text", foo.contents);
+        parser.parse(new StringReader("<a><b><a><b><a>Text</a></b></a></b></a>"), null);
+        assertEquals("Text", foo.contents);
+    }
+    
+
+    @Test
+    public void testAddExplicitTransitionWithQName() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            AttachPoint<Object> aNode = element("a").attachPoint();
+            element("a").element("b").addTransition(new QName("a"), aNode);
+            element("a").attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<a>Text</a>"), null);
+        assertEquals("Text", foo.contents);
+        parser.parse(new StringReader("<a><b><a>Text</a></b></a>"), null);
+        assertEquals("Text", foo.contents);
+        parser.parse(new StringReader("<a><b><a><b><a>Text</a></b></a></b></a>"), null);
+        assertEquals("Text", foo.contents);
+    }
+    
+
+    @Test
+    public void testAddExplicitTransitionWithFilter() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            AttachPoint<Object> aNode = element("a").attachPoint();
+            element("a").element("b").addTransition(
+                    new ElementFilter() {
+                        @Override
+                        public boolean test(StartElement element) {
+                            return element.getName().getLocalPart().equals("a");
+                        }
+                    }, aNode);
             element("a").attach(foo);
         }}.build());
         parser.parse(new StringReader("<a>Text</a>"), null);

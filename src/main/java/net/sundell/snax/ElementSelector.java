@@ -168,6 +168,16 @@ public abstract class ElementSelector<T> {
         buildState().addTransition(new ExplicitTransitionTest<T>(new QName(localName)), 
                                    target.getNodeState());
     }
+
+    public void addTransition(QName name, AttachPoint<T> target) {
+        buildState().addTransition(new ExplicitTransitionTest<T>(name), 
+                                   target.getNodeState());
+    }
+    
+    public void addTransition(ElementFilter filter, AttachPoint<T> target) {
+        buildState().addTransition(new FilteredTransitionTest<T>(filter), 
+                                   target.getNodeState());
+    }
     
     protected NodeState<T> buildState() {
     	NodeState<T> parentState = (parent == null) ?
@@ -198,6 +208,16 @@ public abstract class ElementSelector<T> {
         @Override
         public boolean matches(StartElement element) {
             return element.getName().equals(name);
+        }
+    }
+    static class FilteredTransitionTest<T> implements NodeTest<T> {
+        private ElementFilter filter;
+        FilteredTransitionTest(ElementFilter filter) {
+            this.filter = filter;
+        }
+        @Override
+        public boolean matches(StartElement element) {
+            return filter.test(element);
         }
     }
     
