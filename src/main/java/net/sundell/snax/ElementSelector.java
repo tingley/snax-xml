@@ -36,7 +36,7 @@ public abstract class ElementSelector<T> {
         return parent;
     }
 
-    protected abstract boolean matches(StartElement element);
+    abstract boolean matches(StartElement element);
 
     @Override
     public abstract boolean equals(Object o);
@@ -179,7 +179,7 @@ public abstract class ElementSelector<T> {
                                    target.getNodeState());
     }
     
-    protected NodeState<T> buildState() {
+    NodeState<T> buildState() {
     	NodeState<T> parentState = (parent == null) ?
     			context.getModel().getRoot() : parent.buildState();
     	return addState(parentState);
@@ -191,12 +191,12 @@ public abstract class ElementSelector<T> {
      * @param baseState state to which the transition should be added
      * @return target state for the transition
      */
-    protected NodeState<T> addState(NodeState<T> baseState) {
+    NodeState<T> addState(NodeState<T> baseState) {
     	NodeTest<T> test = new ElementSelectorTest<T>(this);
     	return baseState.addTransition(test, new NodeState<T>());
     }
     
-    protected List<ElementConstraint> getConstraints() {
+    List<ElementConstraint> getConstraints() {
     	return constraints;
     }
     
