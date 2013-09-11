@@ -1,12 +1,9 @@
 package net.sundell.snax;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-
-import javax.xml.namespace.QName;
 
 /**
  * A <code>NodeModelBuilder</code> is used to construct a <code>NodeModel</code> which is then
@@ -25,7 +22,7 @@ import javax.xml.namespace.QName;
  * @see NodeModel
  * @see SNAXParser
  */
-public class NodeModelBuilder<T> {
+public class NodeModelBuilder<T> extends Selectable<T> {
 
     private NodeModel<T> model;
 
@@ -37,124 +34,14 @@ public class NodeModelBuilder<T> {
         this.model = model;
     }
     
-    /**
-     * Select an element with a specified <code>QName</code>. 
-     * @param name element qname to match
-     * @param constraints additional constraints, if any
-     * @return element selector
-     */
-    public final ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
-        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
-        return new ChildSelector<T>(this, null, ElementSelector.gatherConstraints(nameConstraint, constraints));
-    }
-
-    /**
-     * Equivalent to <code>element(new QName("name"))</code>. 
-     * @param localName element local name to match
-     * @param constraints additional constraints, if any
-     * @return
-     */
-    public final ElementSelector<T> element(String localName, ElementConstraint...constraints) {
-        return element(new QName(localName), constraints);
-    }
-
-    /**
-     * Syntactic sugar to allow quick construction of a chain of simple element selectors.
-     * <code>elements(name1, name2, name3)</code> is equivalent to 
-     * <code>element(name1).element(name2).element(name3)</code>.
-     * @param names element names 
-     * @return last element selector in the chain
-     */
-    public final ElementSelector<T> elements(QName...names) {
-        ElementSelector<T> parent = null;
-        for (QName name : Arrays.asList(names)) {
-            parent = new ChildSelector<T>(this, parent, 
-                    (ElementConstraint)new ElementEqualsConstraint(name));
-        }
-        return parent;
-    }
-
-    /**
-     * Equivalent to <code>elements(new QName("name1"), new QName("name2"), ...)</code>.
-     * @param localNames element local names 
-     * @return last element selector in the chain
-     */
-    public final ElementSelector<T> elements(String...localNames) {
-        ElementSelector<T> parent = null;
-        for (String name : Arrays.asList(localNames)) {
-            parent = new ChildSelector<T>(this, parent, 
-                    (ElementConstraint)new ElementEqualsConstraint(new QName(name)));
-        }
-        return parent;
+    @Override
+    NodeModelBuilder<T> getContext() {
+        return this;
     }
     
-    /**
-     * Selector that matches any child element that satisfies the specified constraints.  If no
-     * constraints are provided, accepts all child elements.
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public final ElementSelector<T> child(ElementConstraint...constraints) {
-        return new ChildSelector<T>(this, null, Arrays.asList(constraints));
-    }
-    
-    /**
-     * Selector that matches any descendant element that satisfies the specified constraints.  If no
-     * constraints are provided, accepts all descendant elements.
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(ElementConstraint...constraints) {
-        return new DescendantSelector<T>(this, null, Arrays.asList(constraints));
-    }
-
-    /**
-     * Selector that matches any descendant element with a given name that satisfies the 
-     * specified constraints.  If no constraints are provided, accepts all descendant elements
-     * with the given name.
-     * @param qname element QName
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
-        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
-        return new DescendantSelector<T>(this, null, ElementSelector.gatherConstraints(nameConstraint, constraints));
-    }
-
-    /**
-     * Equivalent to <code>descendant(new QName("name1"), ...)</code>.
-     * @param localName element name (not namespace-qualified)
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
-        return descendant(new QName(localName), constraints);
-    }
-
-    /**
-     * Used to match an attribute when adding a constraint to an <code>ElementSelector</code>.
-     * The returned <code>AttributeMatcher</code> instance can be used to specify the constraint, as in
-     * <pre>  child(with(attrName).equalTo("attrValue"))</pre>
-     * which will match any child node with the specified attribute that has a value of "attrValue".
-     * <p>    
-     * It may also be used as a constraint on its own, as in
-     * <pre>  child(with(attrName))</pre>
-     * which will match any child node with the specified attribute.
-     * 
-     * @param attributeName QName of the desired attribute
-     * @return AttributeMatcher for use in constraint construction
-     */
-    public final AttributeMatcher with(QName attributeQName) {
-        return new AttributeMatcher(attributeQName);
-    }
-
-    /**
-     * Equivalent to <code>with(new QName(attributeLocalName))</code>.
-     * @param attributeLocalName attribute local name
-     * @return AttributeMatcher for use in constraint construction
-     */
-    public final AttributeMatcher with(String attributeLocalName) {
-        return new AttributeMatcher(new QName(attributeLocalName));
+    @Override
+    ElementSelector<T> getCurrentSelector() {
+        return null;
     }
 
     /**

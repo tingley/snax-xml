@@ -20,7 +20,6 @@ class ChildSelector<T> extends ElementSelector<T> {
     
     @Override
     NodeState<T> addState(NodeState<T> baseState) {
-        // TODO: gather all the constraints
         ElementConstraint test = new ElementSelectorTest<T>(this);
         return baseState.addTransition(test, new NodeState<T>());
     }

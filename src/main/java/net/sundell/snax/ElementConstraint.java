@@ -3,7 +3,8 @@ package net.sundell.snax;
 import javax.xml.stream.events.StartElement;
 
 /**
- * An attribute constraint on a selected element.
+ * A constraint that indicates whether or not an element
+ * is eligible to follow a given state transition.
  */
 public interface ElementConstraint {
     /**

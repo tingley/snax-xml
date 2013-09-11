@@ -10,7 +10,7 @@ import javax.xml.stream.events.StartElement;
  * 
  * @param <T>
  */
-public abstract class ElementSelector<T> {
+public abstract class ElementSelector<T> extends Selectable<T> {
 
     private NodeModelBuilder<T> context;
     private List<ElementConstraint> constraints = Collections.emptyList();
@@ -26,6 +26,16 @@ public abstract class ElementSelector<T> {
         this.context = context;
         this.parent = parent;
         this.constraints = constraints;
+    }
+    
+    @Override
+    NodeModelBuilder<T> getContext() {
+        return context;
+    }
+    
+    @Override
+    ElementSelector<T> getCurrentSelector() {
+        return this;
     }
 
     /**
@@ -49,99 +59,6 @@ public abstract class ElementSelector<T> {
         if (!(o instanceof ElementSelector)) return false;
         ElementSelector e = (ElementSelector)o;
         return constraints.equals(e.constraints);
-    }
-
-    /**
-     * Select an element with a specified QName. 
-     * @param name element qname to match
-     * @param constraints additional constraints, if any
-     * @return element selector
-     */
-    public ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
-        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
-        return new ChildSelector<T>(context, this, gatherConstraints(nameConstraint, constraints));
-    }
-
-    /**
-     * Equivalent to element(new QName("name")). 
-     * @param localName element local name to match
-     * @param constraints additional constraints, if any
-     * @return
-     */
-    public ElementSelector<T> element(String name, ElementConstraint...constraints) {
-        return element(new QName(name), constraints);
-    }
-
-    /**
-     * Syntactic sugar to allow quick construction of a chain of simple element selectors.
-     * elements(name1, name2, name3) is equivalent to element(name1).element(name2).element(name3).
-     * @param names element names 
-     * @return last element selector in the chain
-     */
-    public ElementSelector<T> elements(QName...qnames) {
-        ElementSelector<T> parent = this;
-        for (QName qname : Arrays.asList(qnames)) {
-            parent = new ChildSelector<T>(context, parent, 
-                    (ElementConstraint)new ElementEqualsConstraint(qname));
-        }
-        return parent;
-    }
-
-    /**
-     * Equivalent to elements(new QName("name1"), new QName("name2"), ...).
-     * @param localNames element local names 
-     * @return last element selector in the chain
-     */
-    public ElementSelector<T> elements(String...localNames) {
-        ElementSelector<T> parent = this;
-        for (String localName : Arrays.asList(localNames)) {
-            parent = new ChildSelector<T>(context, parent, 
-                    (ElementConstraint)new ElementEqualsConstraint(new QName(localName)));
-        }
-        return parent;
-    }
-
-    /**
-     * Selector that matches any child element that satisfies the specified constraints.  If no
-     * constraints are provided, accepts all child elements.
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public ElementSelector<T> child(ElementConstraint...constraints) {
-        return new ChildSelector<T>(context, this, Arrays.asList(constraints));
-    }
-    
-    /**
-     * Selector that matches any descendant element that satisfies the specified constraints.  If no
-     * constraints are provided, accepts all descendant elements.
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public ElementSelector<T> descendant(ElementConstraint...constraints) {
-        return new DescendantSelector<T>(context, this, Arrays.asList(constraints));
-    }
-    
-    /**
-     * Selector that matches any descendant element with a given name that satisfies the 
-     * specified constraints.  If no constraints are provided, accepts all descendant elements
-     * with the given name.
-     * @param qname element QName
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
-        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
-        return new DescendantSelector<T>(context, this, gatherConstraints(nameConstraint, constraints));
-    }
-    
-    /**
-     * Equivalent to <code>descendant(new QName("name1"), ...)</code>.
-     * @param localName element name (not namespace-qualified)
-     * @param constraints element constraints
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
-        return descendant(new QName(localName), constraints);
     }
 
     /**
