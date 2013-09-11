@@ -131,7 +131,7 @@ public class TestParser {
         final TestCHandler foo = new TestCHandler();
         final TestHandler bar = new TestHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
-            AttachPoint<Object> aNode = element("a").attachPoint();
+            ElementSelector<Object> aNode = element("a");
             element("a").element("b").addTransition("a", aNode);
             element("a").attach(foo);
             element("a").attach(bar);
@@ -153,7 +153,7 @@ public class TestParser {
         final TestCHandler foo = new TestCHandler();
         final TestHandler bar = new TestHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
-            AttachPoint<Object> aNode = element("a").attachPoint();
+            ElementSelector<Object> aNode = element("a");
             element("a").element("b").addTransition("a", aNode);
             element("a").attach(foo);
             element("a").attach(bar);
@@ -176,7 +176,7 @@ public class TestParser {
         final TestHandler bar = new TestHandler();
 
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
-            AttachPoint<Object> aNode = element("a").attachPoint();
+            ElementSelector<Object> aNode = element("a");
             element("a").element("b").addTransition(
                     new ElementConstraint() {
                         @Override

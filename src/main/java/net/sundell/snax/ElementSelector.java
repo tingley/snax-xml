@@ -15,6 +15,7 @@ public abstract class ElementSelector<T> extends Selectable<T> {
     private NodeModelBuilder<T> context;
     private List<ElementConstraint> constraints = Collections.emptyList();
     private ElementSelector<T> parent = null;
+    private NodeState<T> nodeState = null;
 
     ElementSelector(NodeModelBuilder<T> context, ElementSelector<T> parent) {
         this.context = context;
@@ -71,17 +72,13 @@ public abstract class ElementSelector<T> extends Selectable<T> {
     	context.addElementHandler(state, handler);
     }
     
-    public AttachPoint<T> attachPoint() {
-        return new AttachPoint<T>(buildState());
-    }
-    
-    public void addTransition(String localName, AttachPoint<T> target) {
+    public void addTransition(String localName, ElementSelector<T> target) {
         addTransition(new QName(localName), target);
     }
 
-    public void addTransition(QName name, AttachPoint<T> target) {
+    public void addTransition(QName name, ElementSelector<T> target) {
         buildState().addTransition(new ElementEqualsConstraint(name), 
-                                   target.getNodeState());
+                                   target.buildState());
     }
     
     /**
@@ -94,14 +91,17 @@ public abstract class ElementSelector<T> extends Selectable<T> {
      * @param constraint
      * @param target
      */
-    public void addTransition(ElementConstraint constraint, AttachPoint<T> target) {
-        buildState().addTransition(constraint, target.getNodeState());
+    public void addTransition(ElementConstraint constraint, ElementSelector<T> target) {
+        buildState().addTransition(constraint, target.buildState());
     }
     
     NodeState<T> buildState() {
-    	NodeState<T> parentState = (parent == null) ?
-    			context.getModel().getRoot() : parent.buildState();
-    	return addState(parentState);
+        if (nodeState == null) {
+        	NodeState<T> parentState = (parent == null) ?
+        			context.getModel().getRoot() : parent.buildState();
+        	nodeState = addState(parentState);
+        }
+        return nodeState;
     }
     
     /**
