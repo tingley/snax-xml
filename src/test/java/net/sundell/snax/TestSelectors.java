@@ -36,14 +36,14 @@ public class TestSelectors {
         assertEquals("bar", bar.elementName);
     }
     
-    // Test Regex element matching with an ElementFilter
+    // Test Regex element matching with an ElementConstraint
     @Test
     public void testRegexElementSelectors() throws Exception {
         final TestHandler foo = new TestHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
-            element("xml").element(new ElementFilter() {
+            element("xml").child(new ElementConstraint() {
                 @Override
-                public boolean test(StartElement element) {
+                public boolean matches(StartElement element) {
                     return Pattern.matches("foo.*", element.getName().getLocalPart());
                 }
             }).attach(foo);
@@ -54,9 +54,9 @@ public class TestSelectors {
         // Test ElementHandler.elements()
         final TestHandler bar= new TestHandler();
         parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
-            element(new ElementFilter() {
+            child(new ElementConstraint() {
                 @Override
-                public boolean test(StartElement element) {
+                public boolean matches(StartElement element) {
                     return Pattern.matches(".*l", element.getName().getLocalPart());
                 }
             }).attach(bar);
@@ -275,10 +275,10 @@ public class TestSelectors {
         final TestMultiHandler handler = new TestMultiHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             // Find all children whose element names have digits in them
-            descendant(new ElementFilter() {
+            descendant(new ElementConstraint() {
                 Pattern p = Pattern.compile("\\d");
                 @Override
-                public boolean test(StartElement element) {
+                public boolean matches(StartElement element) {
                     return p.matcher(element.getName().getLocalPart()).find();
                 }
             }).attach(handler);

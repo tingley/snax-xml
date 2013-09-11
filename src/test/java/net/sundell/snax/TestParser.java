@@ -185,9 +185,9 @@ public class TestParser {
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             AttachPoint<Object> aNode = element("a").attachPoint();
             element("a").element("b").addTransition(
-                    new ElementFilter() {
+                    new ElementConstraint() {
                         @Override
-                        public boolean test(StartElement element) {
+                        public boolean matches(StartElement element) {
                             return element.getName().getLocalPart().equals("a");
                         }
                     }, aNode);

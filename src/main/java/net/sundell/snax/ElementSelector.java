@@ -5,6 +5,11 @@ import java.util.*;
 import javax.xml.namespace.QName;
 import javax.xml.stream.events.StartElement;
 
+/**
+ * Base element selector class.
+ * 
+ * @param <T>
+ */
 public abstract class ElementSelector<T> {
 
     private NodeModelBuilder<T> context;
@@ -36,8 +41,15 @@ public abstract class ElementSelector<T> {
         return parent;
     }
 
+    /**
+     * Test whether this element satisfies the selector condition, 
+     * not including any conditions imposed by constraints (which
+     * are checked separately).
+     * @param element
+     * @return
+     */
     abstract boolean matches(StartElement element);
-
+    
     @Override
     public abstract boolean equals(Object o);
 
@@ -87,16 +99,6 @@ public abstract class ElementSelector<T> {
         }
         return parent;
     }
-    
-    /**
-     * Create a selector that invokes an arbitrary filter to determine whether to
-     * accept elements.
-     * @param filter ElementFilter to test elements
-     * @return element selector
-     */
-    public final ElementSelector<T> element(ElementFilter filter) {
-        return new ElementFilterSelector<T>(context, this, filter);
-    }   
 
     /**
      * Selector that matches any child element that satisfies the specified constraints.  If no
@@ -141,15 +143,6 @@ public abstract class ElementSelector<T> {
     }
 
     /**
-     * Selector that matches any descendant element that is accepted by the specified filter. 
-     * @param filter element filter
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(ElementFilter filter) {
-        return new DescendantFilterSelector<T>(context, this, filter);
-    }
-    
-    /**
      * Attach an ElementHandler to this selector or chain of selectors.  The attached
      * handler will receive notifications for every selected element.
      * @param handler element handler
@@ -168,12 +161,22 @@ public abstract class ElementSelector<T> {
     }
 
     public void addTransition(QName name, AttachPoint<T> target) {
-        buildState().addTransition(new ExplicitTransitionTest<T>(name), 
+        buildState().addTransition(new ExplicitTransitionElementTest<T>(name), 
                                    target.getNodeState());
     }
     
-    public void addTransition(ElementFilter filter, AttachPoint<T> target) {
-        buildState().addTransition(new FilteredTransitionTest<T>(filter), 
+    /**
+     * Add an explicit transition based on all explicit constraints.
+     * <b>TODO</b> This isn't quite consistent with the way I use 
+     * constraints for other things.  The normal semantics for 
+     * selectors is to say child(ElementConstraint...), ie a 
+     * node selector + constraints on that selection. 
+     * 
+     * @param constraint
+     * @param target
+     */
+    public void addTransition(ElementConstraint constraint, AttachPoint<T> target) {
+        buildState().addTransition(new ExplicitTransitionConstraintTest<T>(constraint),
                                    target.getNodeState());
     }
     
@@ -198,9 +201,9 @@ public abstract class ElementSelector<T> {
     	return constraints;
     }
     
-    static class ExplicitTransitionTest<T> implements NodeTest<T> {
+    static class ExplicitTransitionElementTest<T> implements NodeTest<T> {
         private QName name;
-        ExplicitTransitionTest(QName name) {
+        ExplicitTransitionElementTest(QName name) {
             this.name = name;
         }
         @Override
@@ -208,14 +211,15 @@ public abstract class ElementSelector<T> {
             return element.getName().equals(name);
         }
     }
-    static class FilteredTransitionTest<T> implements NodeTest<T> {
-        private ElementFilter filter;
-        FilteredTransitionTest(ElementFilter filter) {
-            this.filter = filter;
+    
+    static class ExplicitTransitionConstraintTest<T> implements NodeTest<T> {
+        private ElementConstraint constraint;
+        ExplicitTransitionConstraintTest(ElementConstraint constraint) {
+            this.constraint = constraint;
         }
         @Override
         public boolean matches(StartElement element) {
-            return filter.test(element);
+            return constraint.matches(element);
         }
     }
     
@@ -243,7 +247,7 @@ public abstract class ElementSelector<T> {
         }
         
         @Override
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public boolean equals(Object o) {
             if (o == this) {
                 return true;

@@ -86,16 +86,6 @@ public class NodeModelBuilder<T> {
     }
     
     /**
-     * Create a selector that invokes an arbitrary filter to determine whether to
-     * accept elements.
-     * @param filter <code>ElementFilter</code> to test elements
-     * @return element selector
-     */
-    public final ElementSelector<T> element(ElementFilter filter) {
-        return new ElementFilterSelector<T>(this, filter);
-    }
-    
-    /**
      * Selector that matches any child element that satisfies the specified constraints.  If no
      * constraints are provided, accepts all child elements.
      * @param constraints element constraints
@@ -137,15 +127,6 @@ public class NodeModelBuilder<T> {
         return new DescendantEqualsSelector<T>(this, new QName(localName), Arrays.asList(constraints));
     }
 
-    /**
-     * Selector that matches any descendant element that is accepted by the specified filter. 
-     * @param filter element filter
-     * @return element selector
-     */
-    public final ElementSelector<T> descendant(ElementFilter filter) {
-        return new DescendantFilterSelector<T>(this, filter);
-    }
-    
     /**
      * Used to match an attribute when adding a constraint to an <code>ElementSelector</code>.
      * The returned <code>AttributeMatcher</code> instance can be used to specify the constraint, as in
