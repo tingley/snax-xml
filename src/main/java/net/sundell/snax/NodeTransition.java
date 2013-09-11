@@ -2,19 +2,19 @@ package net.sundell.snax;
 
 class NodeTransition<T> {
 
-    private NodeTest<T> test;
+    private ElementConstraint test;
     private NodeState<T> target;
     
-    NodeTransition(NodeTest<T> test, NodeState<T> target) {
+    NodeTransition(ElementConstraint test, NodeState<T> target) {
         this.test = test;
         this.target = target;
     }
 
-    NodeTest<T> getTest() {
+    ElementConstraint getTest() {
         return test;
     }
 
-    void setTest(NodeTest<T> test) {
+    void setTest(ElementConstraint test) {
         this.test = test;
     }
 

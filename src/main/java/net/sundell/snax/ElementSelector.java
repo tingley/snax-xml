@@ -13,8 +13,8 @@ import javax.xml.stream.events.StartElement;
 public abstract class ElementSelector<T> {
 
     private NodeModelBuilder<T> context;
-    private ElementSelector<T> parent;
     private List<ElementConstraint> constraints = Collections.emptyList();
+    private ElementSelector<T> parent = null;
     
     ElementSelector(NodeModelBuilder<T> context) {
         this.context = context;
@@ -33,12 +33,8 @@ public abstract class ElementSelector<T> {
     ElementSelector(NodeModelBuilder<T> context, ElementSelector<T> parent, 
                     List<ElementConstraint> constraints) {
         this.context = context;
-        this.constraints = constraints;
         this.parent = parent;
-    }
-
-    ElementSelector<T> getParent() {
-        return parent;
+        this.constraints = constraints;
     }
 
     /**
@@ -51,7 +47,12 @@ public abstract class ElementSelector<T> {
     abstract boolean matches(StartElement element);
     
     @Override
-    public abstract boolean equals(Object o);
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof ElementSelector)) return false;
+        ElementSelector e = (ElementSelector)o;
+        return constraints.equals(e.constraints);
+    }
 
     /**
      * Select an element with a specified QName. 
@@ -60,7 +61,8 @@ public abstract class ElementSelector<T> {
      * @return element selector
      */
     public ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
-        return new ElementEqualsSelector<T>(context, this, qname, Arrays.asList(constraints));
+        return new ChildSelector<T>(context, this, 
+                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
     }
 
     /**
@@ -81,8 +83,9 @@ public abstract class ElementSelector<T> {
      */
     public ElementSelector<T> elements(QName...qnames) {
         ElementSelector<T> parent = this;
-        for (QName qame : Arrays.asList(qnames)) {
-            parent = new ElementEqualsSelector<T>(context, parent, qame);
+        for (QName qname : Arrays.asList(qnames)) {
+            parent = new ChildSelector<T>(context, parent, 
+                    (ElementConstraint)new ElementEqualsConstraint(qname));
         }
         return parent;
     }
@@ -95,7 +98,8 @@ public abstract class ElementSelector<T> {
     public ElementSelector<T> elements(String...localNames) {
         ElementSelector<T> parent = this;
         for (String localName : Arrays.asList(localNames)) {
-            parent = new ElementEqualsSelector<T>(context, parent, new QName(localName));
+            parent = new ChildSelector<T>(context, parent, 
+                    (ElementConstraint)new ElementEqualsConstraint(new QName(localName)));
         }
         return parent;
     }
@@ -129,7 +133,8 @@ public abstract class ElementSelector<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
-        return new DescendantEqualsSelector<T>(context, this, qname, Arrays.asList(constraints));
+        return new DescendantSelector<T>(context, this, 
+                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
     }
 
     /**
@@ -139,7 +144,9 @@ public abstract class ElementSelector<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
-        return new DescendantEqualsSelector<T>(context, this, new QName(localName), Arrays.asList(constraints));
+        return new DescendantSelector<T>(context, this, 
+                new ElementEqualsConstraint(new QName(localName), 
+                        Arrays.asList(constraints)));
     }
 
     /**
@@ -161,7 +168,7 @@ public abstract class ElementSelector<T> {
     }
 
     public void addTransition(QName name, AttachPoint<T> target) {
-        buildState().addTransition(new ExplicitTransitionElementTest<T>(name), 
+        buildState().addTransition(new ElementEqualsConstraint(name), 
                                    target.getNodeState());
     }
     
@@ -176,8 +183,7 @@ public abstract class ElementSelector<T> {
      * @param target
      */
     public void addTransition(ElementConstraint constraint, AttachPoint<T> target) {
-        buildState().addTransition(new ExplicitTransitionConstraintTest<T>(constraint),
-                                   target.getNodeState());
+        buildState().addTransition(constraint, target.getNodeState());
     }
     
     NodeState<T> buildState() {
@@ -193,7 +199,8 @@ public abstract class ElementSelector<T> {
      * @return target state for the transition
      */
     NodeState<T> addState(NodeState<T> baseState) {
-    	NodeTest<T> test = new ElementSelectorTest<T>(this);
+        // TODO: gather all the constraints
+    	ElementConstraint test = new ElementSelectorTest<T>(this);
     	return baseState.addTransition(test, new NodeState<T>());
     }
     
@@ -201,29 +208,7 @@ public abstract class ElementSelector<T> {
     	return constraints;
     }
     
-    static class ExplicitTransitionElementTest<T> implements NodeTest<T> {
-        private QName name;
-        ExplicitTransitionElementTest(QName name) {
-            this.name = name;
-        }
-        @Override
-        public boolean matches(StartElement element) {
-            return element.getName().equals(name);
-        }
-    }
-    
-    static class ExplicitTransitionConstraintTest<T> implements NodeTest<T> {
-        private ElementConstraint constraint;
-        ExplicitTransitionConstraintTest(ElementConstraint constraint) {
-            this.constraint = constraint;
-        }
-        @Override
-        public boolean matches(StartElement element) {
-            return constraint.matches(element);
-        }
-    }
-    
-    static class ElementSelectorTest<T> implements NodeTest<T> {
+    static class ElementSelectorTest<T> implements ElementConstraint {
         private ElementSelector<T> selector;
         ElementSelectorTest(ElementSelector<T> selector) {
             this.selector = selector;
@@ -231,9 +216,6 @@ public abstract class ElementSelector<T> {
         
         @Override
         public boolean matches(StartElement element) {
-            if (!selector.matches(element)) {
-                return false;
-            }
             for (ElementConstraint constraint : selector.constraints) {
                 if (!constraint.matches(element)) {
                     return false;

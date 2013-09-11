@@ -62,7 +62,7 @@ class NodeState <T>{
      * @param targetState
      * @return node that the transition leads to
      */
-    NodeState<T> addTransition(NodeTest<T> test, NodeState<T> targetState) {
+    NodeState<T> addTransition(ElementConstraint test, NodeState<T> targetState) {
     	assert (test != null);
     	assert (targetState != null);
         for (NodeTransition<T> transition : transitions) {
@@ -85,7 +85,7 @@ class NodeState <T>{
     
     NodeState<T> addDescendantRule(ElementSelector<T> selector) {
         // TODO: refactor this use of new
-        NodeTest<T> test = new ElementSelector.ElementSelectorTest<T>(selector);
+        ElementConstraint test = new ElementSelector.ElementSelectorTest<T>(selector);
         for (NodeTransition<T> rule : descendantRules) {
             if (test.equals(rule.getTest())) {
                 return rule.getTarget();

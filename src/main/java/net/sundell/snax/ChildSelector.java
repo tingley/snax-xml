@@ -1,5 +1,6 @@
 package net.sundell.snax;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.events.StartElement;
@@ -17,16 +18,27 @@ class ChildSelector<T> extends ElementSelector<T> {
                     List<ElementConstraint> constraints) {
         super(context, parent, constraints);
     }
+    
+    ChildSelector(NodeModelBuilder<T> context, ElementConstraint constraint) {
+        super(context, Collections.singletonList(constraint));
+    }
+    
+    ChildSelector(NodeModelBuilder<T> context, ElementSelector<T> parent, 
+            ElementConstraint constraint) {
+        super(context, parent, Collections.singletonList(constraint));
+    }
 
     @Override
     protected boolean matches(StartElement element) {
+        for (ElementConstraint constraint : getConstraints()) {
+            if (!constraint.matches(element)) return false;
+        }
         return true;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean equals(Object o) {
-        return (o != null && (o instanceof ChildSelector));
+        return (o instanceof ChildSelector) && super.equals(o);
     }
     
     @Override

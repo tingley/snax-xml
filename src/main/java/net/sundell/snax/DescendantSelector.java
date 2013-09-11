@@ -1,5 +1,6 @@
 package net.sundell.snax;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.events.StartElement;
@@ -18,8 +19,21 @@ class DescendantSelector<T> extends ElementSelector<T> {
         super(context, parent, constraints);
     }
     
+    DescendantSelector(NodeModelBuilder<T> context, ElementConstraint constraint) {
+        super(context, Collections.singletonList(constraint));
+    }
+    
+    DescendantSelector(NodeModelBuilder<T> context, ElementSelector<T> parent, 
+            ElementConstraint constraint) {
+        super(context, parent, Collections.singletonList(constraint));
+    }
+    
+    // TODO: refactor with ChildSelector
     @Override
     protected boolean matches(StartElement element) {
+        for (ElementConstraint constraint : getConstraints()) {
+            if (!constraint.matches(element)) return false;
+        }
         return true;
     }
 
@@ -29,9 +43,8 @@ class DescendantSelector<T> extends ElementSelector<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean equals(Object o) {
-        return (o != null && (o instanceof DescendantSelector));
+        return (o instanceof DescendantSelector) && super.equals(o);
     }
     
     @Override

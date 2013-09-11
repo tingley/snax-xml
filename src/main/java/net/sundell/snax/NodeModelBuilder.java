@@ -44,7 +44,8 @@ public class NodeModelBuilder<T> {
      * @return element selector
      */
     public final ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
-        return new ElementEqualsSelector<T>(this, qname, Arrays.asList(constraints));
+        return new ChildSelector<T>(this, 
+                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
     }
 
     /**
@@ -67,7 +68,8 @@ public class NodeModelBuilder<T> {
     public final ElementSelector<T> elements(QName...names) {
         ElementSelector<T> parent = null;
         for (QName name : Arrays.asList(names)) {
-            parent = new ElementEqualsSelector<T>(this, parent, name);
+            parent = new ChildSelector<T>(this, parent, 
+                    (ElementConstraint)new ElementEqualsConstraint(name));
         }
         return parent;
     }
@@ -80,7 +82,8 @@ public class NodeModelBuilder<T> {
     public final ElementSelector<T> elements(String...localNames) {
         ElementSelector<T> parent = null;
         for (String name : Arrays.asList(localNames)) {
-            parent = new ElementEqualsSelector<T>(this, parent, new QName(name));
+            parent = new ChildSelector<T>(this, parent, 
+                    (ElementConstraint)new ElementEqualsConstraint(new QName(name)));
         }
         return parent;
     }
@@ -114,7 +117,8 @@ public class NodeModelBuilder<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
-        return new DescendantEqualsSelector<T>(this, qname, Arrays.asList(constraints));
+        return new DescendantSelector<T>(this, 
+                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
     }
 
     /**
@@ -124,7 +128,7 @@ public class NodeModelBuilder<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
-        return new DescendantEqualsSelector<T>(this, new QName(localName), Arrays.asList(constraints));
+        return descendant(new QName(localName), constraints);
     }
 
     /**
