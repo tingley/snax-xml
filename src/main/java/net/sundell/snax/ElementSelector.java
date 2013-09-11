@@ -15,15 +15,6 @@ public abstract class ElementSelector<T> {
     private NodeModelBuilder<T> context;
     private List<ElementConstraint> constraints = Collections.emptyList();
     private ElementSelector<T> parent = null;
-    
-    ElementSelector(NodeModelBuilder<T> context) {
-        this.context = context;
-    }
-
-    ElementSelector(NodeModelBuilder<T> context, List<ElementConstraint> constraints) {
-        this.context = context;
-        this.constraints = constraints;
-    }
 
     ElementSelector(NodeModelBuilder<T> context, ElementSelector<T> parent) {
         this.context = context;
@@ -44,9 +35,15 @@ public abstract class ElementSelector<T> {
      * @param element
      * @return
      */
-    abstract boolean matches(StartElement element);
+    boolean matches(StartElement element) {
+        for (ElementConstraint constraint : getConstraints()) {
+            if (!constraint.matches(element)) return false;
+        }
+        return true;
+    }
     
     @Override
+    @SuppressWarnings("rawtypes")
     public boolean equals(Object o) {
         if (o == this) return true;
         if (!(o instanceof ElementSelector)) return false;
@@ -198,11 +195,7 @@ public abstract class ElementSelector<T> {
      * @param baseState state to which the transition should be added
      * @return target state for the transition
      */
-    NodeState<T> addState(NodeState<T> baseState) {
-        // TODO: gather all the constraints
-    	ElementConstraint test = new ElementSelectorTest<T>(this);
-    	return baseState.addTransition(test, new NodeState<T>());
-    }
+    abstract NodeState<T> addState(NodeState<T> baseState);
     
     List<ElementConstraint> getConstraints() {
     	return constraints;
