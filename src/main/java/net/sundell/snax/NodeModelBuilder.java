@@ -44,8 +44,8 @@ public class NodeModelBuilder<T> {
      * @return element selector
      */
     public final ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
-        return new ChildSelector<T>(this, null,
-                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
+        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
+        return new ChildSelector<T>(this, null, ElementSelector.gatherConstraints(nameConstraint, constraints));
     }
 
     /**
@@ -117,8 +117,8 @@ public class NodeModelBuilder<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
-        return new DescendantSelector<T>(this, null,
-                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
+        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
+        return new DescendantSelector<T>(this, null, ElementSelector.gatherConstraints(nameConstraint, constraints));
     }
 
     /**

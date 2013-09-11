@@ -1,6 +1,5 @@
 package net.sundell.snax;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,11 +10,6 @@ class DescendantSelector<T> extends ElementSelector<T> {
     DescendantSelector(NodeModelBuilder<T> context, ElementSelector<T> parent, 
                     List<ElementConstraint> constraints) {
         super(context, parent, constraints);
-    }
-    
-    DescendantSelector(NodeModelBuilder<T> context, ElementSelector<T> parent, 
-            ElementConstraint constraint) {
-        super(context, parent, Collections.singletonList(constraint));
     }
 
     @Override

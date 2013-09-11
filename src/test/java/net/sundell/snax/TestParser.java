@@ -1,14 +1,7 @@
 package net.sundell.snax;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 
 import net.sundell.snax.SNAXParser;

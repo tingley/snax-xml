@@ -11,7 +11,6 @@ import net.sundell.snax.TestUtils.TestCHandler;
 
 import org.junit.Test;
 
-import static net.sundell.snax.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 
 /**

@@ -38,10 +38,10 @@ class NodeState <T>{
     /**
      * Immutable empty state returned when nodes can not transition anywhere else.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     static NodeState EMPTY_STATE = createEmptyState();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static NodeState createEmptyState() {
         List<NodeTransition> transitions = Collections.emptyList();
         List<ElementHandler> elementHandlers = Collections.emptyList();

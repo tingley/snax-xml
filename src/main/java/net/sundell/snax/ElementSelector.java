@@ -58,8 +58,8 @@ public abstract class ElementSelector<T> {
      * @return element selector
      */
     public ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
-        return new ChildSelector<T>(context, this, 
-                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
+        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
+        return new ChildSelector<T>(context, this, gatherConstraints(nameConstraint, constraints));
     }
 
     /**
@@ -130,10 +130,10 @@ public abstract class ElementSelector<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(QName qname, ElementConstraint...constraints) {
-        return new DescendantSelector<T>(context, this, 
-                new ElementEqualsConstraint(qname, Arrays.asList(constraints)));
+        ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
+        return new DescendantSelector<T>(context, this, gatherConstraints(nameConstraint, constraints));
     }
-
+    
     /**
      * Equivalent to <code>descendant(new QName("name1"), ...)</code>.
      * @param localName element name (not namespace-qualified)
@@ -141,9 +141,7 @@ public abstract class ElementSelector<T> {
      * @return element selector
      */
     public final ElementSelector<T> descendant(String localName, ElementConstraint...constraints) {
-        return new DescendantSelector<T>(context, this, 
-                new ElementEqualsConstraint(new QName(localName), 
-                        Arrays.asList(constraints)));
+        return descendant(new QName(localName), constraints);
     }
 
     /**
@@ -199,6 +197,14 @@ public abstract class ElementSelector<T> {
     
     List<ElementConstraint> getConstraints() {
     	return constraints;
+    }
+    
+    // XXX
+    static List<ElementConstraint> gatherConstraints(ElementConstraint head, ElementConstraint[] rest) {
+        List<ElementConstraint> constraints = new ArrayList<ElementConstraint>(1 + rest.length);
+        constraints.add(head);
+        constraints.addAll(Arrays.asList(rest));
+        return constraints;
     }
     
     static class ElementSelectorTest<T> implements ElementConstraint {

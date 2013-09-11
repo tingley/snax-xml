@@ -3,7 +3,6 @@ package net.sundell.snax;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
