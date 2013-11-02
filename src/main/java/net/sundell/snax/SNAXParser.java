@@ -200,6 +200,11 @@ public class SNAXParser<T> {
             e.setLocation(currentLocation);
             throw e;
         }
+        // Anything that was a runtime exception we re-throw unaltered
+        catch (RuntimeException e) {
+        	throw e;
+        }
+        // Checked exceptions get wrapped
         catch (Exception e) {
             SNAXUserException se = new SNAXUserException(e);
             se.setLocation(currentLocation);
