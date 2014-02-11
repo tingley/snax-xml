@@ -72,17 +72,33 @@ public abstract class ElementSelector<T> extends Selectable<T> {
     	context.addElementHandler(state, handler);
     }
     
+    /**
+     * Create a transition to another node state represented by its
+     * {@link ElementSelector}.
+     * 
+     * @param localName Local name of the element on which to transition
+     *                  (namespace is ignored)
+     * @param target target node state to which the transition leads
+     */
     public void addTransition(String localName, ElementSelector<T> target) {
         addTransition(new QName(localName), target);
     }
 
+    /**
+     * Create a transition to another node state represented by its
+     * {@link ElementSelector}.
+     * 
+     * @param name QName of the element on which to transition
+     * @param target target node state to which the transition leads
+     */
     public void addTransition(QName name, ElementSelector<T> target) {
         buildState().addTransition(new ElementEqualsConstraint(name), 
                                    target.buildState());
     }
     
     /**
-     * Add an explicit transition based on all explicit constraints.
+     * Add an explicit transition based on an explicit constraints.
+     * <p>
      * <b>TODO</b> This isn't quite consistent with the way I use 
      * constraints for other things.  The normal semantics for 
      * selectors is to say child(ElementConstraint...), ie a 
