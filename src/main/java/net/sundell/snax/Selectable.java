@@ -19,7 +19,7 @@ public abstract class Selectable<T> {
      * @param constraints additional constraints, if any
      * @return element selector
      */
-    public final ElementSelector<T> element(QName qname, ElementConstraint...constraints) {
+    public final ChildSelector<T> element(QName qname, ElementConstraint...constraints) {
         ElementEqualsConstraint nameConstraint = new ElementEqualsConstraint(qname);
         return new ChildSelector<T>(getContext(), getCurrentSelector(), 
                 ElementSelector.gatherConstraints(nameConstraint, constraints));
@@ -31,7 +31,7 @@ public abstract class Selectable<T> {
      * @param constraints additional constraints, if any
      * @return
      */
-    public final ElementSelector<T> element(String localName, ElementConstraint...constraints) {
+    public final ChildSelector<T> element(String localName, ElementConstraint...constraints) {
         return element(new QName(localName), constraints);
     }
 
@@ -42,13 +42,15 @@ public abstract class Selectable<T> {
      * @param names element names 
      * @return last element selector in the chain
      */
-    public final ElementSelector<T> elements(QName...names) {
+    public final ChildSelector<T> elements(QName...names) {
         ElementSelector<T> parent = getCurrentSelector();
+        ChildSelector<T> newSelector = null;
         for (QName name : Arrays.asList(names)) {
-            parent = new ChildSelector<T>(getContext(), parent, 
+            newSelector = new ChildSelector<T>(getContext(), parent, 
                     (ElementConstraint)new ElementEqualsConstraint(name));
+            parent = newSelector;
         }
-        return parent;
+        return newSelector;
     }
 
     /**
@@ -56,13 +58,15 @@ public abstract class Selectable<T> {
      * @param localNames element local names 
      * @return last element selector in the chain
      */
-    public final ElementSelector<T> elements(String...localNames) {
+    public final ChildSelector<T> elements(String...localNames) {
         ElementSelector<T> parent = getCurrentSelector();
+        ChildSelector<T> newSelector = null;
         for (String name : Arrays.asList(localNames)) {
-            parent = new ChildSelector<T>(getContext(), parent, 
+            newSelector = new ChildSelector<T>(getContext(), parent, 
                     (ElementConstraint)new ElementEqualsConstraint(new QName(name)));
+            parent = newSelector;
         }
-        return parent;
+        return newSelector;
     }
     
     /**
@@ -71,7 +75,7 @@ public abstract class Selectable<T> {
      * @param constraints element constraints
      * @return element selector
      */
-    public final ElementSelector<T> child(ElementConstraint...constraints) {
+    public final ChildSelector<T> child(ElementConstraint...constraints) {
         return new ChildSelector<T>(getContext(), getCurrentSelector(),
                 Arrays.asList(constraints));
     }

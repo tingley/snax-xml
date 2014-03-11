@@ -17,6 +17,8 @@ class NodeState <T>{
     private List<ElementHandler<T>> elementHandlers = 
                             new ArrayList<ElementHandler<T>>();
     private List<NodeTransition<T>> descendantRules = new ArrayList<NodeTransition<T>>();
+    static final int NO_ONLY_LIMIT = Integer.MAX_VALUE;
+    private int onlyValue = NO_ONLY_LIMIT;
     
     public NodeState() { }
 
@@ -34,7 +36,15 @@ class NodeState <T>{
     protected List<NodeTransition<T>> getTransitions() {
         return transitions;
     }
-    
+
+    int getOnlyValue() {
+        return onlyValue;
+    }
+
+    void setOnlyValue(int onlyValue) {
+        this.onlyValue = onlyValue;
+    }
+
     /**
      * Immutable empty state returned when nodes can not transition anywhere else.
      */

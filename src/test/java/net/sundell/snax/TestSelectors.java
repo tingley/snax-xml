@@ -1,6 +1,7 @@
 package net.sundell.snax;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
 import java.util.regex.Pattern;
@@ -288,4 +289,97 @@ public class TestSelectors {
         assertEquals("b2ar", handler.elementNames.get(1));
         assertEquals("ba3r", handler.elementNames.get(2));
     }
+
+    @Test
+    public void testOnly1Element() throws Exception {
+        final TestHandler foo = new TestHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml", "foo").only(1).attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<xml><foo>hello</foo></xml>"), null);
+        assertEquals("foo", foo.elementName);
+        boolean failed = false;
+        try {
+            parser.parse(new StringReader("<xml><foo>hello</foo><foo>world</foo></xml>"), null);
+        }
+        catch (SNAXUserException e) {
+            failed = true;
+        }
+        assertTrue("'only()' failed to restrict node", failed);
+    }
+
+    @Test
+    public void testOnly1RawChild() throws Exception {
+        final TestHandler foo = new TestHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml").child().only(1).attach(foo);
+        }}.build());
+
+        parser.parse(new StringReader("<xml><test>hello</test></xml>"), null);
+        assertEquals("test", foo.elementName);
+        boolean failed = false;
+        try {
+            parser.parse(new StringReader("<xml><test>hello</test><foo>world</foo></xml>"), null);
+        }
+        catch (SNAXUserException e) {
+            failed = true;
+        }
+        assertTrue("'only()' failed to restrict node", failed);
+    }
+
+    @Test
+    public void testOnly2Elements() throws Exception {
+        final TestHandler foo = new TestHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml", "foo").only(2).attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<xml><foo>hello</foo><foo>world</foo></xml>"), null);
+        assertEquals("foo", foo.elementName);
+        boolean failed = false;
+        try {
+            parser.parse(new StringReader("<xml><foo>hello</foo><foo>world</foo><foo>2</foo></xml>"), null);
+        }
+        catch (SNAXUserException e) {
+            failed = true;
+        }
+        assertTrue("'only()' failed to restrict node", failed);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testZeroOnlyArgument() throws Exception {
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml", "foo").only(0).attach(new TestHandler());
+        }}.build());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testNegativeOnlyArgument() throws Exception {
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml", "foo").only(-1).attach(new TestHandler());
+        }}.build());
+    }
+
+    // Make sure the 'only' counters reset if the model is re-used
+    @Test
+    public void testMultipleParserRunsWithOnly() throws Exception {
+        final TestHandler foo = new TestHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml", "foo").only(1).attach(foo);
+        }}.build());
+        parser.parse(new StringReader("<xml><foo>hello</foo></xml>"), null);
+        assertEquals("foo", foo.elementName);
+        foo.elementName = null;
+        parser.parse(new StringReader("<xml><foo>hello</foo></xml>"), null);
+        assertEquals("foo", foo.elementName);
+    }
+
+    @Test
+    public void testParserStateReuse() throws Exception {
+        final TestHandler foo = new TestHandler();
+        final TestHandler bar = new TestHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            elements("xml", "foo").only(1).attach(foo);
+            descendant().element("foo").attach(foo);
+        }}.build());
+    } 
 }

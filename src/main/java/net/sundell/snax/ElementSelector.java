@@ -110,7 +110,7 @@ public abstract class ElementSelector<T> extends Selectable<T> {
     public void addTransition(ElementConstraint constraint, ElementSelector<T> target) {
         buildState().addTransition(constraint, target.buildState());
     }
-    
+
     NodeState<T> buildState() {
         if (nodeState == null) {
         	NodeState<T> parentState = (parent == null) ?

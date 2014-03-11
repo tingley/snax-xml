@@ -63,7 +63,8 @@ public class SNAXParser<T> {
     private Stack<ParseState> stack;
     private ParseState currentState;
     private Location currentLocation;
-
+    private Map<NodeState<T>, Integer> onlyCounts = new HashMap<NodeState<T>, Integer>();
+    
     /**
      * Begin incremental parsing of a data stream, represented by a Reader.  This will initialize
      * the parser but will not perform any parsing.  Callers should then use hasMoreEvents() and 
@@ -127,9 +128,25 @@ public class SNAXParser<T> {
         this.xmlReader = factory.createXMLEventReader(reader);
         this.data = data;
         stack = new Stack<ParseState>();
-        currentState = new ParseState(model.getRoot(), model.getRoot().getDescendantRules(), null);
+        onlyCounts.clear();
+        currentState = getParseState(model.getRoot(), model.getRoot().getDescendantRules(), null);
         currentLocation = null;
         done = false;
+    }
+
+    private ParseState getParseState(NodeState<T> nodeState, 
+            Iterable<NodeTransition<T>> deferredRules, StartElement element) {
+        if (nodeState.getOnlyValue() != NodeState.NO_ONLY_LIMIT) {
+            Integer only = onlyCounts.get(nodeState);
+            if (only == null) {
+                only = nodeState.getOnlyValue();
+            }
+            if (only-- <= 0) {
+                throw new SNAXUserException("Element " + element + " exceeded 'only' value");
+            }
+            onlyCounts.put(nodeState, only);
+        }
+        return new ParseState(nodeState, deferredRules, element);
     }
 
     private XMLEvent processEvent(XMLEvent event) throws SNAXUserException {       
@@ -154,7 +171,7 @@ public class SNAXParser<T> {
                         }
                     }
                 }
-                ParseState newState = new ParseState(nextState, 
+                ParseState newState = getParseState(nextState, 
                         CompoundIterable.prepend(nextState.getDescendantRules(), 
                                                  currentState.deferredRules), 
                         startEl);
@@ -225,10 +242,12 @@ public class SNAXParser<T> {
         NodeState<T> nodeState;
         Iterable<NodeTransition<T>> deferredRules;
         StartElement element;
+        int onlyLimit;
 
         ParseState(NodeState<T> nodeState, Iterable<NodeTransition<T>> deferredRules,
                    StartElement element) { 
             this.nodeState = nodeState;
+            this.onlyLimit = nodeState.getOnlyValue();
             this.deferredRules = deferredRules;
             this.element = element;
         }
