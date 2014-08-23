@@ -18,6 +18,15 @@ Building
 
 SNAX builds with [maven](http://maven.apache.org).
 
+To use SNAX in your own project, add it as a dependency:
+```xml
+    <dependency>
+      <groupId>net.sundell.snax</groupId>
+      <artifactId>snax</artifactId>
+      <version>0.9</version>
+    </dependency>
+```
+
 Downloads
 =========
 
