@@ -13,7 +13,7 @@ import javax.xml.stream.events.*;
  * 
  * @param <T> Data object type that will be passed to parse calls
  */
-public class SNAXParser<T> {
+public class SNAXParser<T> implements AutoCloseable {
 
     private static Logger logger = Logger.getLogger(SNAXParser.class.getName());
     
@@ -34,7 +34,15 @@ public class SNAXParser<T> {
         this.factory = factory;
         this.model = model;
     }
-    
+
+    /**
+     * Close the underlying reader.
+     */
+    @Override
+    public void close() throws XMLStreamException {
+        xmlReader.close();
+    }
+
     /**
      * Get the NodeModel used by this parser.
      * @return model
