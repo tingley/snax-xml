@@ -35,7 +35,7 @@ public class TestSelectors {
         parser.parse(new StringReader("<xml><foo><bar/></foo></xml>"), null);
         assertEquals("bar", bar.elementName);
     }
-    
+
     // Test Regex element matching with an ElementConstraint
     @Test
     public void testRegexElementSelectors() throws Exception {
@@ -64,9 +64,9 @@ public class TestSelectors {
         parser.parse(new StringReader("<xml><foozle /></xml>"), null);
         assertEquals("xml", bar.elementName);        
     }
-    
+
     @Test
-    public void testChild() throws Exception {      
+    public void testChild() throws Exception {
         final TestCHandler foo = new TestCHandler();
         SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             element("xml").element("foo").child().attach(foo);
@@ -77,7 +77,7 @@ public class TestSelectors {
         parser.parse(new StringReader("<xml><foo><baz>BAZ</baz></foo></xml>"), null);
         assertEquals("BAZ", foo.contents);
     }
-    
+
     @Test
     public void testChildWithConstraints() throws Exception {      
         final TestCHandler foo = new TestCHandler();
@@ -89,7 +89,7 @@ public class TestSelectors {
         parser.parse(new StringReader("<xml><foo><baz id='val1'>YES</baz><bar>NO</bar></foo></xml>"), null);
         assertEquals("YES", foo.contents);
     }
-    
+
     @Test
     public void testDescendant() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -99,7 +99,7 @@ public class TestSelectors {
         parser.parse(new StringReader("<xml><foo>YES</foo></xml>"), null);
         assertEquals("YES", foo.contents);        
     }
-    
+
     @Test
     public void testDeepDescendant() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -110,10 +110,9 @@ public class TestSelectors {
         assertEquals("YES", foo.contents);
         foo.contents = "";
         parser.parse(new StringReader("<xml><foo><baz><bar>YES!</bar></baz></foo></xml>"), null);
-        assertEquals("YES!", foo.contents);               
-
+        assertEquals("YES!", foo.contents);
     }
-    
+
     @Test
     public void testDescendantWithConstraints() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -184,7 +183,7 @@ public class TestSelectors {
         assertEquals("YES2", bar.contents);
         
     }
-    
+
     @Test
     public void testNamedDescendantAndChild() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -211,7 +210,7 @@ public class TestSelectors {
         assertEquals("YES", foo.contents);
         assertEquals("YES2", bar.contents);
     }
-    
+
     @Test
     public void testDescendantMasking() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -225,7 +224,7 @@ public class TestSelectors {
         assertEquals("", foo.contents);
         assertEquals("YES2", bar.contents);
     }
-    
+
     @Test
     public void testDescendantNodeOrdering() throws Exception {
         final TestMultiHandler handler = new TestMultiHandler();
@@ -242,7 +241,7 @@ public class TestSelectors {
         assertEquals("f", handler.elementNames.get(5));
         assertEquals("g", handler.elementNames.get(6));
     }
-    
+
     @Test
     public void testNamedDescendant() throws Exception {
         final TestMultiHandler handler = new TestMultiHandler();
@@ -255,7 +254,7 @@ public class TestSelectors {
             assertEquals("x", s);
         }
     }
-    
+
     @Test
     public void testExplicitSelectorPriority() throws Exception {
         final TestHandler foo = new TestHandler();
@@ -269,7 +268,7 @@ public class TestSelectors {
         assertEquals("bar", foo.elementName);
         assertEquals("", bar.elementName);
     }
-   
+
     @Test
     public void testDescendantFilter() throws Exception {
         final TestMultiHandler handler = new TestMultiHandler();
@@ -347,14 +346,14 @@ public class TestSelectors {
 
     @Test(expected = IllegalArgumentException.class)
     public void testZeroOnlyArgument() throws Exception {
-        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+        SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             elements("xml", "foo").only(0).attach(new TestHandler());
         }}.build());
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void testNegativeOnlyArgument() throws Exception {
-        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+        SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             elements("xml", "foo").only(-1).attach(new TestHandler());
         }}.build());
     }
@@ -376,10 +375,9 @@ public class TestSelectors {
     @Test
     public void testParserStateReuse() throws Exception {
         final TestHandler foo = new TestHandler();
-        final TestHandler bar = new TestHandler();
-        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+        SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
             elements("xml", "foo").only(1).attach(foo);
             descendant().element("foo").attach(foo);
         }}.build());
-    } 
+    }
 }

@@ -17,7 +17,7 @@ public class TestUtils {
             this.elementName = el.getName().getLocalPart();
         }
     }
-    
+
     public static class TestCHandler extends DefaultElementHandler<Object> {
         public String contents = "";
         @Override
@@ -25,7 +25,7 @@ public class TestUtils {
             contents = data.getData();
         }
     }
-  
+
     public static class TestMultiHandler extends DefaultElementHandler<Object> {
         public List<String> elementNames = new ArrayList<String>();
         @Override
@@ -44,5 +44,5 @@ public class TestUtils {
             throw new SNAXUserException(message);
         }
     }
-      
+
 }

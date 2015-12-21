@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class TestParser {
 
     private static XMLInputFactory factory = XMLInputFactory.newInstance();
-    
+
     @Test
     public void test1() throws Exception {
         final TestHandler foo = new TestHandler();
@@ -78,7 +78,7 @@ public class TestParser {
         }
         assertTrue("User exception was never thrown", success);
     }
-    
+
     @Test 
     public void testPartialExecution() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -95,22 +95,22 @@ public class TestParser {
         }
         assertEquals("NO", foo.contents);
     }
-    
+
     @Test
     public void testNestedBuilders() throws Exception {
-    	final TestCHandler foo = new TestCHandler();
-    	SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
-    		element("xml").attach(new DefaultElementHandler<Object>() {
-    			@Override
-    			public void build(NodeModelBuilder<Object> builder) {
-    				builder.element("foo").attach(foo);
-    			}
-    		});
-    	}}.build());
+        final TestCHandler foo = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            element("xml").attach(new DefaultElementHandler<Object>() {
+                @Override
+                public void build(NodeModelBuilder<Object> builder) {
+                    builder.element("foo").attach(foo);
+                }
+            });
+        }}.build());
         parser.parse(new StringReader("<xml><foo>YES</foo></xml>"), null);
         assertEquals("YES", foo.contents);
     }
-    
+
     @Test
     public void testMultipleNestedBuilders() throws Exception {
         final TestCHandler foo = new TestCHandler();
@@ -223,10 +223,6 @@ public class TestParser {
             System.setProperty("user.dir", oldUserDir);
             assertEquals("", foo.contents);
         }
-    }
-
-    public static void main(String[] args) {
-        org.junit.runner.JUnitCore.main("net.sundell.snax.TestParser");
     }
 
 }
