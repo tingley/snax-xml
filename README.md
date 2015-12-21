@@ -23,7 +23,7 @@ To use SNAX in your own project, add it as a dependency:
     <dependency>
       <groupId>net.sundell.snax</groupId>
       <artifactId>snax</artifactId>
-      <version>0.9</version>
+      <version>0.10</version>
     </dependency>
 ```
 
