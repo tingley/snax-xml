@@ -1,7 +1,12 @@
 package net.sundell.snax;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 
 import net.sundell.snax.SNAXParser;
@@ -197,7 +202,29 @@ public class TestParser {
         assertEquals("Text", foo.contents);
         assertEquals("a", bar.elementName);
     }
-    
+
+    @Test
+    public void testXXE() throws Exception {
+        final TestCHandler foo = new TestCHandler();
+        SNAXParser<?> parser = SNAXParser.createParser(factory, new NodeModelBuilder<Object>() {{
+            element("foo").attach(foo);
+        }}.build());
+        // Switch to the tests directory so that we can load payload.txt via relative path
+        Path p = Paths.get(getClass().getResource("/payload.txt").toURI());
+        String oldUserDir = System.getProperty("user.dir");
+        System.setProperty("user.dir", p.getParent().toString());
+        try {
+            parser.parse(new InputStreamReader(getClass().getResourceAsStream("/xxe.xml"), StandardCharsets.UTF_8), null);
+        }
+        catch (XMLStreamException e) {
+            ;
+        }
+        finally {
+            System.setProperty("user.dir", oldUserDir);
+            assertEquals("", foo.contents);
+        }
+    }
+
     public static void main(String[] args) {
         org.junit.runner.JUnitCore.main("net.sundell.snax.TestParser");
     }

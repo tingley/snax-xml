@@ -32,6 +32,8 @@ public class SNAXParser<T> implements AutoCloseable {
     
     private SNAXParser(XMLInputFactory factory, NodeModel<T> model) {
         this.factory = factory;
+        // Disable DTD parsing to avoid XXE
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         this.model = model;
     }
 
