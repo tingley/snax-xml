@@ -4,7 +4,7 @@
 
   <groupId>net.sundell.snax</groupId>
   <artifactId>snax</artifactId>
-  <version>0.11-SNAPSHOT</version>
+  <version>0.20-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>snax-xml</name>
@@ -21,8 +21,8 @@
     <developer>
       <name>Chase Tingley</name>
       <email>tingley@gmail.com</email>
-      <organization>Spartan Software, Inc</organization>
-      <organizationUrl>http://spartansoftwareinc.com</organizationUrl>
+      <organization></organization>
+      <organizationUrl></organizationUrl>
     </developer>
   </developers>
   <scm>
@@ -41,8 +41,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
     </plugins>

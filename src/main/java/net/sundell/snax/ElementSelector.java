@@ -1,8 +1,11 @@
 package net.sundell.snax;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.events.Characters;
+import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 
 /**
@@ -16,6 +19,7 @@ public abstract class ElementSelector<T> extends Selectable<T> {
     private List<ElementConstraint> constraints = Collections.emptyList();
     private ElementSelector<T> parent = null;
     private NodeState<T> nodeState = null;
+    private FunctionalHandler<T> functionalHandler;
 
     ElementSelector(NodeModelBuilder<T> context, ElementSelector<T> parent) {
         this.context = context;
@@ -62,14 +66,34 @@ public abstract class ElementSelector<T> extends Selectable<T> {
         return constraints.equals(e.constraints);
     }
 
+    private FunctionalHandler<T> getFunctionalHandler() {
+        if (functionalHandler == null) {
+            functionalHandler = new FunctionalHandler<T>();
+            attach(functionalHandler);
+        }
+        return functionalHandler;
+    }
+
+    public FunctionalHandler<T> start(BiConsumer<StartElement, T> consumer) {
+        return getFunctionalHandler().start(consumer);
+    }
+
+    public FunctionalHandler<T> end(BiConsumer<EndElement, T> consumer) {
+        return getFunctionalHandler().end(consumer);
+    }
+
+    public FunctionalHandler<T> chars(BiConsumer<Characters, T> consumer) {
+        return getFunctionalHandler().chars(consumer);
+    }
+
     /**
      * Attach an ElementHandler to this selector or chain of selectors.  The attached
      * handler will receive notifications for every selected element.
      * @param handler element handler
      */
     public void attach(ElementHandler<T> handler) {
-    	NodeState<T> state = buildState();
-    	context.addElementHandler(state, handler);
+        NodeState<T> state = buildState();
+        context.addElementHandler(state, handler);
     }
     
     /**

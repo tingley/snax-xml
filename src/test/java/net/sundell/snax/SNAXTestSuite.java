@@ -10,7 +10,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     TestParser.class,
     TestSelectors.class,
-    TestConstraints.class
+    TestConstraints.class,
+    TestFunctionalHandlers.class
 })
 public class SNAXTestSuite {
     public static void main(String[] args) {
