@@ -32,7 +32,7 @@ public class TestParser {
         assertEquals("foo", foo.elementName);
         assertEquals("bar", bar.elementName);
     }
-    
+
     @Test
     public void test2() throws Exception {
         final TestHandler foo = new TestHandler();
@@ -46,7 +46,6 @@ public class TestParser {
         assertEquals("bar", foo.elementName);
         assertEquals("", bar.elementName);
     }
-
 
     @Test
     public void testContents() throws Exception {

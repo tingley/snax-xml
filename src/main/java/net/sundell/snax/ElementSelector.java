@@ -2,6 +2,8 @@ package net.sundell.snax;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.events.Characters;
@@ -95,7 +97,38 @@ public abstract class ElementSelector<T> extends Selectable<T> {
         NodeState<T> state = buildState();
         context.addElementHandler(state, handler);
     }
-    
+
+    public <K> void attach(NodeModel<K> childModel, Class<K> type,
+                           Function<StartElement, K> childFactoryMethod,
+                           BiConsumer<K, T> completionHook) {
+        NodeState<T> state = buildState();
+        context.addElementHandler(state, new ElementHandler<T>() {
+            private K innerData;
+            private NodeModelExecutor<K> innerExecutor;
+
+            @Override
+            public void startElement(StartElement element, T data) throws SNAXUserException {
+                innerData = childFactoryMethod.apply(element);
+                innerExecutor = new NodeModelExecutor<K>(childModel, innerData);
+                innerExecutor.processEvent(element);
+            }
+
+            @Override
+            public void endElement(EndElement element, T data) throws SNAXUserException {
+                innerExecutor.processEvent(element);
+                completionHook.accept(innerData, data);
+            }
+
+            @Override
+            public void characters(StartElement parent, Characters characters, T data) throws SNAXUserException {
+                innerExecutor.processEvent(characters);
+            }
+
+            @Override
+            public void build(NodeModelBuilder<T> builder) { }
+        });
+    }
+
     /**
      * Create a transition to another node state represented by its
      * {@link ElementSelector}.

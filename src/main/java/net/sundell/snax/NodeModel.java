@@ -33,7 +33,7 @@ public class NodeModel<T> {
     NodeState<T> getRoot() {
         return root;
     }
-    
+
     void addDeclarationHandler(DeclarationHandler<T> handler) {
         dtdHandlers.add(handler);
     }

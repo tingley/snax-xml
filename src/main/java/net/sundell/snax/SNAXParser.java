@@ -2,7 +2,6 @@ package net.sundell.snax;
 
 import java.io.Reader;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.stream.*;
@@ -19,6 +18,7 @@ public class SNAXParser<T> implements AutoCloseable {
     
     private XMLInputFactory factory;
     private NodeModel<T> model;
+    private NodeModelExecutor<T> executor;
 
     /**
      * Return a new SNAXParser using the specified model.
@@ -68,12 +68,7 @@ public class SNAXParser<T> implements AutoCloseable {
     
     private XMLEventReader xmlReader;
     private T data;
-    private boolean done;
     private boolean isIncremental = false;
-    private Stack<ParseState> stack;
-    private ParseState currentState;
-    private Location currentLocation;
-    private Map<NodeState<T>, Integer> onlyCounts = new HashMap<NodeState<T>, Integer>();
     
     /**
      * Begin incremental parsing of a data stream, represented by a Reader.  This will initialize
@@ -112,7 +107,7 @@ public class SNAXParser<T> implements AutoCloseable {
     public XMLEvent processEvent() throws XMLStreamException, SNAXUserException {
         checkState(xmlReader != null, "startParsing() was never called");
         checkState(isIncremental, "startParsing() was never called");
-        return processEvent(xmlReader.nextEvent());
+        return executor.processEvent(xmlReader.nextEvent());
     }
     
     /**
@@ -130,136 +125,19 @@ public class SNAXParser<T> implements AutoCloseable {
         // TODO: this needs to catch concurrent parse attempts
         init(reader, data);
         for (XMLEvent event = xmlReader.nextEvent(); xmlReader.hasNext(); event = xmlReader.nextEvent()) {
-            processEvent(event);
+            executor.processEvent(event);
         }
     }
     
     private void init(Reader reader, T data) throws XMLStreamException {
         this.xmlReader = factory.createXMLEventReader(reader);
+        this.executor = new NodeModelExecutor(model, data);
         this.data = data;
-        stack = new Stack<ParseState>();
-        onlyCounts.clear();
-        currentState = getParseState(model.getRoot(), model.getRoot().getDescendantRules(), null);
-        currentLocation = null;
-        done = false;
-    }
-
-    private ParseState getParseState(NodeState<T> nodeState, 
-            Iterable<NodeTransition<T>> deferredRules, StartElement element) {
-        if (nodeState.getOnlyValue() != NodeState.NO_ONLY_LIMIT) {
-            Integer only = onlyCounts.get(nodeState);
-            if (only == null) {
-                only = nodeState.getOnlyValue();
-            }
-            if (only-- <= 0) {
-                throw new SNAXUserException("Element " + element + " exceeded 'only' value");
-            }
-            onlyCounts.put(nodeState, only);
-        }
-        return new ParseState(nodeState, deferredRules, element);
-    }
-
-    private XMLEvent processEvent(XMLEvent event) throws SNAXUserException {       
-        try {
-            int type = event.getEventType();
-            currentLocation = event.getLocation();
-            switch (type) {
-            case XMLEvent.START_ELEMENT:
-                StartElement startEl = event.asStartElement();
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("START: " + startEl.getName().getLocalPart());
-                }
-                checkState(!done, "Element started after end of document");
-                
-                NodeState<T> nextState = currentState.nodeState.follow(startEl);
-                if (nextState.equals(NodeState.EMPTY_STATE)) {
-                    // Look for a match among the inherited descendant rules
-                    for (NodeTransition<T> rule : currentState.deferredRules) {
-                        if (rule.getTest().matches(startEl)) {
-                            nextState = rule.getTarget();
-                            break;
-                        }
-                    }
-                }
-                ParseState newState = getParseState(nextState, 
-                        CompoundIterable.prepend(nextState.getDescendantRules(), 
-                                                 currentState.deferredRules), 
-                        startEl);
-                stack.push(newState);
-                newState.nodeState.handleElementStart(startEl, data);
-                currentState = newState;
-                break;
-            case XMLEvent.END_ELEMENT:
-                ParseState ended = stack.pop();
-                EndElement endEl = event.asEndElement();
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("END: " + endEl.getName().getLocalPart());
-                }
-                ended.nodeState.handleElementEnd(endEl, data);
-                if (stack.empty()) {
-                    // End of document!
-                    this.done = true;
-                }
-                else {
-                    currentState = stack.peek();
-                }
-                break;
-            case XMLEvent.CHARACTERS:
-                currentState.nodeState.handleContents(currentState.element, 
-                                            event.asCharacters(), data);
-                break;
-            case XMLEvent.DTD:
-                model.handleDTD((DTD)event, data);
-                break;
-            case XMLEvent.ENTITY_DECLARATION:
-                model.handleEntityDeclaration((EntityDeclaration)event, data);
-                break;
-            case XMLEvent.ENTITY_REFERENCE:
-                model.handleEntityReference((EntityReference)event, data);
-                break;
-            case XMLEvent.NOTATION_DECLARATION:
-                model.handleNotationDeclaration((NotationDeclaration)event, data);
-                break;
-            }
-            return event;
-        }
-        catch (SNAXUserException e) {
-            e.setLocation(currentLocation);
-            throw e;
-        }
-        // Anything that was a runtime exception we re-throw unaltered
-        catch (RuntimeException e) {
-        	throw e;
-        }
-        // Checked exceptions get wrapped
-        catch (Exception e) {
-            SNAXUserException se = new SNAXUserException(e);
-            se.setLocation(currentLocation);
-            throw se;
-        }
     }
 
     private void checkState(boolean test, String message) {
         if (!test) {
             throw new IllegalStateException(message);
-        }
-    }
-
-    /**
-     * Holder for runtime state.
-     */
-    class ParseState {
-        NodeState<T> nodeState;
-        Iterable<NodeTransition<T>> deferredRules;
-        StartElement element;
-        int onlyLimit;
-
-        ParseState(NodeState<T> nodeState, Iterable<NodeTransition<T>> deferredRules,
-                   StartElement element) { 
-            this.nodeState = nodeState;
-            this.onlyLimit = nodeState.getOnlyValue();
-            this.deferredRules = deferredRules;
-            this.element = element;
         }
     }
 }
